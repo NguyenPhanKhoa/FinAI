@@ -1,0 +1,9 @@
+torch>=2.1.0
+transformers>=4.36.0
+peft>=0.7.0
+optimum[openvino]>=1.18.0
+openvino>=2025.0.0
+openvino-genai>=2025.0.0
+huggingface-hub>=0.20.0
+python-dotenv>=1.0.0
+gradio>=4.0.0

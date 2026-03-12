@@ -1,0 +1,22 @@
+{
+  "base_model": "meta-llama/Llama-3.1-8B-Instruct",
+  "lora_model": "FinGPT/fingpt-mt_llama3-8b_lora",
+  "quantization": {
+    "weight_format": "int4",
+    "symmetric": true,
+    "ratio": 1.0,
+    "group_size": -1
+  },
+  "inference": {
+    "device": "NPU",
+    "max_new_tokens": 512,
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "max_prompt_tokens": 1024
+  },
+  "paths": {
+    "base_model_dir": "models/base",
+    "merged_model_dir": "models/merged",
+    "openvino_model_dir": "models/openvino"
+  }
+}
