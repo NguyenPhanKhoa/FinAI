@@ -199,16 +199,13 @@ FinAI/
 │   ├── 03_convert_openvino.py     # Convert to OpenVINO IR INT4
 │   └── 04_run_inference.py        # CLI inference on NPU
 ├── tests/
-│   └── test_fingpt.py             # Automated test suite (14 cases)
-├── test_results/                  # Test reports (.txt + .json)
+│   ├── test_fingpt.py             # Automated test suite (14 cases)
+│   ├── test_report_*.txt          # Test report
+│   └── test_report_*.json         # Test results (raw data)
 ├── models/                        # (gitignored) model files
 │   ├── base/                      # Downloaded base + LoRA
 │   ├── merged/                    # Merged FP16 model
 │   └── openvino/                  # Final INT4 OpenVINO IR
-├── FinAI_Presentation.pptx        # Project presentation (10 slides)
-├── FinAI_Report_VN.docx           # Vietnamese project report
-├── README.md                      # English documentation
-├── README_VN.md                   # Vietnamese documentation
 ├── requirements.txt
 ├── setup.ps1                      # Windows setup script
 ├── .env.example                   # Environment template
