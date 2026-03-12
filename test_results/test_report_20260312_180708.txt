@@ -1,0 +1,205 @@
+======================================================================
+  FinGPT Bot Test Report
+  Date: 2026-03-12 18:07:08
+  Model: fingpt-llama3.1-8b-npu (INT4, OpenVINO, NPU)
+======================================================================
+
+  SUMMARY: 14/14 passed, 0 failed
+  Average response time: 22.5s
+
+----------------------------------------------------------------------
+
+======================================================================
+  Sentiment Analysis (3/3 passed)
+======================================================================
+
+  [PASS] SA-01: Clearly positive earnings news
+  Time: 8.1s | Response length: 271 chars
+  Question: What is the sentiment of this news: 'Apple reported record quarterly revenue of $124 billion, beatin...
+  Result: Partial match 2/6 keywords (acceptable)
+  Matched: positive, revenue
+  Missing: bullish, strong, beat, growth
+  Response preview: The sentiment of this news is POSITIVE.
+
+Reasoning:
+The news mentions that Apple reported record quarterly revenue, which is a positive event. Additionally, it mentions that the revenue exceeded analy...
+  ------------------------------------------------------------------
+
+  [PASS] SA-02: Clearly negative stock news
+  Time: 27.96s | Response length: 1296 chars
+  Question: Analyze the sentiment: 'Tesla shares plunged 12% after the company missed delivery targets and annou...
+  Result: Matched 4/6 keywords, no rejected terms
+  Matched: negative, decline, miss, layoff
+  Missing: bearish, drop
+  Response preview: **Sentiment Analysis**
+
+The sentiment of the given statement is overwhelmingly negative.
+
+**Key Sentiment Indicators**
+
+1. **Plunged**: The word "plunged" has a strong negative connotation, implying a...
+  ------------------------------------------------------------------
+
+  [PASS] SA-03: Neutral/mixed monetary policy news
+  Time: 19.91s | Response length: 941 chars
+  Question: What is the market sentiment of: 'The Federal Reserve held interest rates steady, signaling a wait-a...
+  Result: Matched 4/6 keywords, no rejected terms
+  Matched: neutral, uncertain, steady, wait
+  Missing: mixed, hold
+  Response preview: Market Sentiment Analysis:
+
+The given statement indicates a neutral market sentiment with a slight positive bias. Here's why:
+
+1. **Neutral tone**: The statement mentions that the Federal Reserve held...
+  ------------------------------------------------------------------
+
+======================================================================
+  Financial Knowledge (3/3 passed)
+======================================================================
+
+  [PASS] FK-01: Basic financial metric definition
+  Time: 27.81s | Response length: 1222 chars
+  Question: What is the Price-to-Earnings (P/E) ratio and why is it important for stock valuation?...
+  Result: Matched 6/6 keywords, no rejected terms
+  Matched: price, earnings, ratio, valuation, stock, share
+  Response preview: The Price-to-Earnings (P/E) ratio is a widely used valuation metric that compares a company's current stock price to its earnings per share. It's a crucial tool for investors and analysts to assess a ...
+  ------------------------------------------------------------------
+
+  [PASS] FK-02: Fundamental market concepts
+  Time: 27.84s | Response length: 1379 chars
+  Question: Explain the difference between a bull market and a bear market....
+  Result: Matched 5/6 keywords, no rejected terms
+  Matched: bull, bear, fall, market, price
+  Missing: rise
+  Response preview: A bull market and a bear market are two terms used to describe the overall direction of the stock market.
+
+**Bull Market:**
+
+A bull market is characterized by a sustained upward trend in the stock mar...
+  ------------------------------------------------------------------
+
+  [PASS] FK-03: Core investment principle
+  Time: 27.73s | Response length: 1364 chars
+  Question: What is diversification in investing and why is it important?...
+  Result: Matched 4/5 keywords, no rejected terms
+  Matched: risk, asset, spread, invest
+  Missing: portfolio
+  Response preview: Diversification is a fundamental concept in investing that involves spreading investments across different asset classes, sectors, or geographic regions to minimize risk. It's essential to understand ...
+  ------------------------------------------------------------------
+
+======================================================================
+  Market Analysis (2/2 passed)
+======================================================================
+
+  [PASS] MA-01: Revenue vs stock price analysis
+  Time: 27.87s | Response length: 1326 chars
+  Question: If a company's revenue is growing 20% year-over-year but its stock price has dropped 30%, what could...
+  Result: Matched 4/6 keywords, no rejected terms
+  Matched: valuation, market, growth, price
+  Missing: expect, investor
+  Response preview: Given the company's revenue growth of 20% year-over-year, but its stock price has dropped 30%, there could be several reasons for this divergence. Here are some possible explanations:
+
+1. **Profit Mar...
+  ------------------------------------------------------------------
+
+  [PASS] MA-02: Recession indicators knowledge
+  Time: 27.94s | Response length: 1305 chars
+  Question: What are the key financial indicators to watch during a recession?...
+  Result: Matched 6/6 keywords, no rejected terms
+  Matched: gdp, unemployment, inflation, interest, consumer, rate
+  Response preview: During a recession, it's essential to monitor key financial indicators to gauge the economy's performance and potential recovery prospects. Here are the key financial indicators to watch:
+
+1. **Gross ...
+  ------------------------------------------------------------------
+
+======================================================================
+  Financial Text Processing (2/2 passed)
+======================================================================
+
+  [PASS] FT-01: Earnings report summarization
+  Time: 12.84s | Response length: 423 chars
+  Question: Summarize this earnings report excerpt: 'Q3 revenue was $50.7B, up 8% YoY. Operating income rose to ...
+  Result: Matched 5/6 keywords, no rejected terms
+  Matched: revenue, income, cash, dividend, share
+  Missing: growth
+  Response preview: Here's a summary of the earnings report excerpt:
+
+* The company's Q3 revenue increased by 8% year-over-year to $50.7 billion.
+* Operating income rose to $13.2 billion, a significant improvement from $...
+  ------------------------------------------------------------------
+
+  [PASS] FT-02: Financial data extraction
+  Time: 9.84s | Response length: 187 chars
+  Question: Extract the key financial metrics from: 'XYZ Corp reported EPS of $3.42 vs expected $3.15, revenue o...
+  Result: Matched 4/5 keywords, no rejected terms
+  Matched: eps, revenue, margin, expect
+  Missing: beat
+  Response preview: Here are the key financial metrics extracted:
+
+1. **EPS**: $3.42 (vs expected $3.15)
+2. **Revenue**: $28.5B (vs expected $27.8B)
+3. **Gross Margin**: 45.2% (improved from 43.8% last year)...
+  ------------------------------------------------------------------
+
+======================================================================
+  Risk Assessment (1/1 passed)
+======================================================================
+
+  [PASS] RA-01: Concentration risk awareness
+  Time: 27.5s | Response length: 1392 chars
+  Question: What are the main risks of investing heavily in a single technology stock?...
+  Result: Matched 5/6 keywords, no rejected terms
+  Matched: risk, concentration, volatil, diversif, sector
+  Missing: loss
+  Response preview: Investing heavily in a single technology stock can be a high-risk strategy for several reasons:
+
+1. **Company-specific risk**: If the company experiences financial difficulties, faces intense competit...
+  ------------------------------------------------------------------
+
+======================================================================
+  Domain Boundary (1/1 passed)
+======================================================================
+
+  [PASS] DB-01: Non-financial request — should still respond but may redirect to finance
+  Time: 16.87s | Response length: 583 chars
+  Question: Write me a poem about flowers....
+  Result: Response generated
+  Response preview: In gardens full of life and hue,
+A rainbow of flowers bloom anew.
+
+Petals of pink, a gentle sight,
+Unfurl to greet the morning light.
+
+Soft as silk, their delicate form,
+Dance in the breeze, a gentle ...
+  ------------------------------------------------------------------
+
+======================================================================
+  Streaming (1/1 passed)
+======================================================================
+
+  [PASS] ST-01: Test streaming SSE endpoint
+  Time: 27.59s | Response length: 1267 chars
+  Question: What is a stock split and how does it affect shareholders?...
+  Result: Matched 5/5 keywords, no rejected terms
+  Matched: stock, split, share, price, value
+  Response preview: A stock split is a corporate action where a company divides its existing shares into a larger number of shares, resulting in a proportional increase in the number of outstanding shares.
+
+Here's how it...
+  ------------------------------------------------------------------
+
+======================================================================
+  Responses API (1/1 passed)
+======================================================================
+
+  [PASS] RP-01: Test /v1/responses endpoint
+  Time: 25.71s | Response length: 1073 chars
+  Question: Define market capitalization....
+  Result: Matched 6/6 keywords, no rejected terms
+  Matched: market, cap, share, price, value, company
+  Response preview: Market capitalization (market cap) is the total value of a company's outstanding shares. It is calculated by multiplying the total number of outstanding shares by the current market price of the stock...
+  ------------------------------------------------------------------
+
+======================================================================
+  END OF REPORT
+======================================================================

@@ -29,7 +29,11 @@ models/openvino/
 # OS
 Thumbs.db
 .DS_Store
+~$*
 
 # Logs
 *.log
 logs/
+
+# Claude backup
+.claude/.claude_backup/

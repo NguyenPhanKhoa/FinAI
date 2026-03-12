@@ -1,48 +1,21 @@
 """
 Gradio web UI for FinGPT NPU inference.
 
+Connects to the local OpenAI-compatible API server (server.py) so you
+don't need to load the model twice.
+
 Usage:
-  python app.py
-  python app.py --device CPU    # override device
-  python app.py --share         # create public link
+  python app.py                          # default: server at localhost:8000
+  python app.py --api-url http://...:9000  # custom server URL
+  python app.py --share                  # create public Gradio link
 """
 
 import argparse
-import json
-from pathlib import Path
 
 import gradio as gr
-import openvino_genai as ov_genai
+import requests
 
-SYSTEM_PROMPT = (
-    "You are FinGPT, a financial AI assistant specialized in financial analysis, "
-    "sentiment analysis, market forecasting, and financial text processing. "
-    "Provide clear, accurate, and professional financial insights."
-)
-
-pipe = None
-inference_config = None
-
-
-def build_prompt(user_input: str) -> str:
-    return (
-        "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
-        f"{SYSTEM_PROMPT}<|eot_id|>"
-        f"<|start_header_id|>user<|end_header_id|>\n\n"
-        f"{user_input}<|eot_id|>"
-        f"<|start_header_id|>assistant<|end_header_id|>\n\n"
-    )
-
-
-def respond(message: str, history: list) -> str:
-    gen_config = ov_genai.GenerationConfig()
-    gen_config.max_new_tokens = inference_config.get("max_new_tokens", 512)
-    gen_config.temperature = inference_config.get("temperature", 0.7)
-    gen_config.top_p = inference_config.get("top_p", 0.9)
-
-    formatted = build_prompt(message)
-    return pipe.generate(formatted, gen_config)
-
+API_URL = "http://127.0.0.1:8000"
 
 EXAMPLES = [
     "What is the current market sentiment for AAPL based on recent earnings?",
@@ -52,25 +25,51 @@ EXAMPLES = [
 ]
 
 
+def respond(message: str, history: list) -> str:
+    """Send message to the FinGPT API server and return the response."""
+    messages = []
+    for user_msg, bot_msg in history:
+        messages.append({"role": "user", "content": user_msg})
+        if bot_msg:
+            messages.append({"role": "assistant", "content": bot_msg})
+    messages.append({"role": "user", "content": message})
+
+    try:
+        resp = requests.post(
+            f"{API_URL}/v1/chat/completions",
+            json={
+                "model": "fingpt-llama3.1-8b-npu",
+                "messages": messages,
+                "max_tokens": 512,
+                "temperature": 0.7,
+            },
+            timeout=120,
+        )
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"]
+    except requests.ConnectionError:
+        return "Error: Cannot connect to FinGPT server. Make sure `python server.py` is running."
+    except Exception as e:
+        return f"Error: {e}"
+
+
 def main():
-    global pipe, inference_config
+    global API_URL
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--device", type=str, help="Inference device (NPU, CPU, GPU)")
+    parser.add_argument("--api-url", type=str, default=API_URL, help="FinGPT API server URL")
     parser.add_argument("--share", action="store_true", help="Create public Gradio link")
     args = parser.parse_args()
 
-    config_path = Path(__file__).parent / "configs" / "model_config.json"
-    with open(config_path) as f:
-        config = json.load(f)
+    API_URL = args.api_url
 
-    inference_config = config["inference"]
-    model_dir = str(Path(__file__).parent / config["paths"]["openvino_model_dir"])
-    device = args.device or config["inference"]["device"]
-
-    print(f"Loading model on {device}...")
-    pipe = ov_genai.LLMPipeline(model_dir, device)
-    print("Model loaded.")
+    # Check server health
+    try:
+        health = requests.get(f"{API_URL}/health", timeout=5).json()
+        print(f"Connected to FinGPT server: {health['model']} on {health['device']}")
+    except Exception:
+        print(f"Warning: FinGPT server not reachable at {API_URL}")
+        print("Start it with: python server.py")
 
     demo = gr.ChatInterface(
         fn=respond,
@@ -80,7 +79,6 @@ def main():
             "via OpenVINO with INT4 quantization."
         ),
         examples=EXAMPLES,
-        theme=gr.themes.Soft(),
     )
 
     demo.launch(share=args.share)

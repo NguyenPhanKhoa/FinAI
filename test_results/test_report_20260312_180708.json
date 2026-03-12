@@ -1,0 +1,309 @@
+[
+  {
+    "id": "SA-01",
+    "category": "Sentiment Analysis",
+    "description": "Clearly positive earnings news",
+    "question": "What is the sentiment of this news: 'Apple reported record quarterly revenue of $124 billion, beating analyst expectations by 5%.'",
+    "response": "The sentiment of this news is POSITIVE.\n\nReasoning:\nThe news mentions that Apple reported record quarterly revenue, which is a positive event. Additionally, it mentions that the revenue exceeded analyst expectations by 5%, which further reinforces the positive sentiment.",
+    "full_response_length": 271,
+    "elapsed_seconds": 8.1,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Partial match 2/6 keywords (acceptable)",
+    "matched_keywords": [
+      "positive",
+      "revenue"
+    ],
+    "missing_keywords": [
+      "bullish",
+      "strong",
+      "beat",
+      "growth"
+    ],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "SA-02",
+    "category": "Sentiment Analysis",
+    "description": "Clearly negative stock news",
+    "question": "Analyze the sentiment: 'Tesla shares plunged 12% after the company missed delivery targets and announced layoffs affecting 10% of its workforce.'",
+    "response": "**Sentiment Analysis**\n\nThe sentiment of the given statement is overwhelmingly negative.\n\n**Key Sentiment Indicators**\n\n1. **Plunged**: The word \"plunged\" has a strong negative connotation, implying a significant and sudden decline in value.\n2. **Missed delivery targets**: This phrase suggests that the company has failed to meet its expectations, which is a negative sentiment indicator.\n3. **Announced layoffs**: This phrase is a strong negative sentiment indicator, as it implies job losses and p",
+    "full_response_length": 1296,
+    "elapsed_seconds": 27.96,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 4/6 keywords, no rejected terms",
+    "matched_keywords": [
+      "negative",
+      "decline",
+      "miss",
+      "layoff"
+    ],
+    "missing_keywords": [
+      "bearish",
+      "drop"
+    ],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "SA-03",
+    "category": "Sentiment Analysis",
+    "description": "Neutral/mixed monetary policy news",
+    "question": "What is the market sentiment of: 'The Federal Reserve held interest rates steady, signaling a wait-and-see approach amid mixed economic data.'",
+    "response": "Market Sentiment Analysis:\n\nThe given statement indicates a neutral market sentiment with a slight positive bias. Here's why:\n\n1. **Neutral tone**: The statement mentions that the Federal Reserve held interest rates steady, which suggests that the market is not expecting any significant changes in monetary policy.\n2. **Neutral sentiment**: The phrase \"signaling a wait-and-see approach\" implies that the market is in a state of uncertainty, waiting for more data to determine the next course of act",
+    "full_response_length": 941,
+    "elapsed_seconds": 19.91,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 4/6 keywords, no rejected terms",
+    "matched_keywords": [
+      "neutral",
+      "uncertain",
+      "steady",
+      "wait"
+    ],
+    "missing_keywords": [
+      "mixed",
+      "hold"
+    ],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "FK-01",
+    "category": "Financial Knowledge",
+    "description": "Basic financial metric definition",
+    "question": "What is the Price-to-Earnings (P/E) ratio and why is it important for stock valuation?",
+    "response": "The Price-to-Earnings (P/E) ratio is a widely used valuation metric that compares a company's current stock price to its earnings per share. It's a crucial tool for investors and analysts to assess a stock's value and potential for future growth.\n\n**What is the P/E ratio?**\n\nThe P/E ratio is calculated by dividing the current stock price by the earnings per share (EPS). The formula is:\n\nP/E ratio = Current Stock Price / Earnings Per Share\n\n**Why is the P/E ratio important?**\n\nThe P/E ratio is es",
+    "full_response_length": 1222,
+    "elapsed_seconds": 27.81,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 6/6 keywords, no rejected terms",
+    "matched_keywords": [
+      "price",
+      "earnings",
+      "ratio",
+      "valuation",
+      "stock",
+      "share"
+    ],
+    "missing_keywords": [],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "FK-02",
+    "category": "Financial Knowledge",
+    "description": "Fundamental market concepts",
+    "question": "Explain the difference between a bull market and a bear market.",
+    "response": "A bull market and a bear market are two terms used to describe the overall direction of the stock market.\n\n**Bull Market:**\n\nA bull market is characterized by a sustained upward trend in the stock market, where stock prices are generally rising. This is often accompanied by:\n\n1. Rising stock prices: Stocks tend to increase in value over time.\n2. Increased investor confidence: Investors are more likely to invest in the market, driving up demand and prices.\n3. Positive sentiment: Market sentiment ",
+    "full_response_length": 1379,
+    "elapsed_seconds": 27.84,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 5/6 keywords, no rejected terms",
+    "matched_keywords": [
+      "bull",
+      "bear",
+      "fall",
+      "market",
+      "price"
+    ],
+    "missing_keywords": [
+      "rise"
+    ],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "FK-03",
+    "category": "Financial Knowledge",
+    "description": "Core investment principle",
+    "question": "What is diversification in investing and why is it important?",
+    "response": "Diversification is a fundamental concept in investing that involves spreading investments across different asset classes, sectors, or geographic regions to minimize risk. It's essential to understand why diversification is crucial in investing:\n\n1. **Risk Reduction**: By spreading investments across different asset classes, you can reduce the risk of significant losses. When one investment performs poorly, others can help offset the losses.\n2. **Consistency**: Diversification helps to smooth out",
+    "full_response_length": 1364,
+    "elapsed_seconds": 27.73,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 4/5 keywords, no rejected terms",
+    "matched_keywords": [
+      "risk",
+      "asset",
+      "spread",
+      "invest"
+    ],
+    "missing_keywords": [
+      "portfolio"
+    ],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "MA-01",
+    "category": "Market Analysis",
+    "description": "Revenue vs stock price analysis",
+    "question": "If a company's revenue is growing 20% year-over-year but its stock price has dropped 30%, what could explain this divergence?",
+    "response": "Given the company's revenue growth of 20% year-over-year, but its stock price has dropped 30%, there could be several reasons for this divergence. Here are some possible explanations:\n\n1. **Profit Margins**: The company's profit margins might be declining, which could be due to increased competition, higher operating costs, or decreased pricing power. This would lead to a decline in the stock price despite revenue growth.\n\n2. **Valuation**: The market might have reevaluated the company's valuati",
+    "full_response_length": 1326,
+    "elapsed_seconds": 27.87,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 4/6 keywords, no rejected terms",
+    "matched_keywords": [
+      "valuation",
+      "market",
+      "growth",
+      "price"
+    ],
+    "missing_keywords": [
+      "expect",
+      "investor"
+    ],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "MA-02",
+    "category": "Market Analysis",
+    "description": "Recession indicators knowledge",
+    "question": "What are the key financial indicators to watch during a recession?",
+    "response": "During a recession, it's essential to monitor key financial indicators to gauge the economy's performance and potential recovery prospects. Here are the key financial indicators to watch:\n\n1. **Gross Domestic Product (GDP)**: GDP measures the total value of goods and services produced within a country's borders. A decline in GDP indicates a recession.\n\n2. **Unemployment Rate**: A rise in unemployment rates signals a decline in consumer spending, which can have a ripple effect on the economy.\n\n3.",
+    "full_response_length": 1305,
+    "elapsed_seconds": 27.94,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 6/6 keywords, no rejected terms",
+    "matched_keywords": [
+      "gdp",
+      "unemployment",
+      "inflation",
+      "interest",
+      "consumer",
+      "rate"
+    ],
+    "missing_keywords": [],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "FT-01",
+    "category": "Financial Text Processing",
+    "description": "Earnings report summarization",
+    "question": "Summarize this earnings report excerpt: 'Q3 revenue was $50.7B, up 8% YoY. Operating income rose to $13.2B from $11.5B. Free cash flow was $12.1B. The company repurchased $5B in shares and increased its quarterly dividend by 10%.'",
+    "response": "Here's a summary of the earnings report excerpt:\n\n* The company's Q3 revenue increased by 8% year-over-year to $50.7 billion.\n* Operating income rose to $13.2 billion, a significant improvement from $11.5 billion.\n* Free cash flow was strong at $12.1 billion.\n* The company made significant progress on its capital allocation strategy by repurchasing $5 billion in shares.\n* It also increased its quarterly dividend by 10%.",
+    "full_response_length": 423,
+    "elapsed_seconds": 12.84,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 5/6 keywords, no rejected terms",
+    "matched_keywords": [
+      "revenue",
+      "income",
+      "cash",
+      "dividend",
+      "share"
+    ],
+    "missing_keywords": [
+      "growth"
+    ],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "FT-02",
+    "category": "Financial Text Processing",
+    "description": "Financial data extraction",
+    "question": "Extract the key financial metrics from: 'XYZ Corp reported EPS of $3.42 vs expected $3.15, revenue of $28.5B vs expected $27.8B, and gross margin improved to 45.2% from 43.8% last year.'",
+    "response": "Here are the key financial metrics extracted:\n\n1. **EPS**: $3.42 (vs expected $3.15)\n2. **Revenue**: $28.5B (vs expected $27.8B)\n3. **Gross Margin**: 45.2% (improved from 43.8% last year)",
+    "full_response_length": 187,
+    "elapsed_seconds": 9.84,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 4/5 keywords, no rejected terms",
+    "matched_keywords": [
+      "eps",
+      "revenue",
+      "margin",
+      "expect"
+    ],
+    "missing_keywords": [
+      "beat"
+    ],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "RA-01",
+    "category": "Risk Assessment",
+    "description": "Concentration risk awareness",
+    "question": "What are the main risks of investing heavily in a single technology stock?",
+    "response": "Investing heavily in a single technology stock can be a high-risk strategy for several reasons:\n\n1. **Company-specific risk**: If the company experiences financial difficulties, faces intense competition, or encounters significant regulatory hurdles, the value of your investment could plummet.\n2. **Market volatility**: Technology stocks are often highly volatile, and market fluctuations can significantly impact the stock's value. A single stock can be particularly susceptible to market downturns",
+    "full_response_length": 1392,
+    "elapsed_seconds": 27.5,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 5/6 keywords, no rejected terms",
+    "matched_keywords": [
+      "risk",
+      "concentration",
+      "volatil",
+      "diversif",
+      "sector"
+    ],
+    "missing_keywords": [
+      "loss"
+    ],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "DB-01",
+    "category": "Domain Boundary",
+    "description": "Non-financial request — should still respond but may redirect to finance",
+    "question": "Write me a poem about flowers.",
+    "response": "In gardens full of life and hue,\nA rainbow of flowers bloom anew.\n\nPetals of pink, a gentle sight,\nUnfurl to greet the morning light.\n\nSoft as silk, their delicate form,\nDance in the breeze, a gentle storm.\n\nThe scent of roses, sweet and true,\nFills the air with a fragrance anew.\n\nTulips sway, their cups held high,\nDrinking in the sunshine's warm sigh.\n\nDahlias stand, their statuesque might,\nA splash of color in the morning light.\n\nThe language of flowers, a subtle tone,\nSpeaks to the heart, a l",
+    "full_response_length": 583,
+    "elapsed_seconds": 16.87,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Response generated",
+    "matched_keywords": [],
+    "missing_keywords": [],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "ST-01",
+    "category": "Streaming",
+    "description": "Test streaming SSE endpoint",
+    "question": "What is a stock split and how does it affect shareholders?",
+    "response": "A stock split is a corporate action where a company divides its existing shares into a larger number of shares, resulting in a proportional increase in the number of outstanding shares.\n\nHere's how it works:\n\n1. **Stock split ratio**: The company announces a stock split ratio, which is the number of new shares shareholders will receive for each existing share. For example, a 2-for-1 stock split means that each shareholder will receive two new shares for every one existing share.\n2. **New shares*",
+    "full_response_length": 1267,
+    "elapsed_seconds": 27.59,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 5/5 keywords, no rejected terms",
+    "matched_keywords": [
+      "stock",
+      "split",
+      "share",
+      "price",
+      "value"
+    ],
+    "missing_keywords": [],
+    "rejected_keywords_found": []
+  },
+  {
+    "id": "RP-01",
+    "category": "Responses API",
+    "description": "Test /v1/responses endpoint",
+    "question": "Define market capitalization.",
+    "response": "Market capitalization (market cap) is the total value of a company's outstanding shares. It is calculated by multiplying the total number of outstanding shares by the current market price of the stock.\n\nMarket capitalization can be calculated using the following formula:\n\nMarket Capitalization = Total Outstanding Shares × Current Market Price\n\nFor example, if a company has 100 million shares outstanding and its current market price is $50 per share, its market capitalization would be:\n\nMarket Ca",
+    "full_response_length": 1073,
+    "elapsed_seconds": 25.71,
+    "status_code": 200,
+    "pass": true,
+    "reason": "Matched 6/6 keywords, no rejected terms",
+    "matched_keywords": [
+      "market",
+      "cap",
+      "share",
+      "price",
+      "value",
+      "company"
+    ],
+    "missing_keywords": [],
+    "rejected_keywords_found": []
+  }
+]
