@@ -1,0 +1,26 @@
+{
+  "name": "fingpt-finance",
+  "version": "1.0.0",
+  "description": "FinGPT Finance AI Agent — daily news, sentiment, forecasting, Q&A, trading signals",
+  "author": "FinAI",
+  "tags": ["finance", "stocks", "trading", "news", "fingpt", "llama3"],
+  "model": {
+    "provider": "ollama",
+    "name": "fingpt",
+    "base": "llama3.1:8b",
+    "quantization": "Q4_K_M",
+    "inference": "local",
+    "endpoint": "http://localhost:11434"
+  },
+  "env": {
+    "NEWSAPI_KEY": "Your NewsAPI.org key (for financial news)",
+    "FINNHUB_API_KEY": "Your Finnhub API key (for stock data)"
+  },
+  "bins": ["fin-news", "fin-analyze"],
+  "install": {
+    "npm": "install"
+  },
+  "scheduler": {
+    "daily_news": "0 8 * * *"
+  }
+}
