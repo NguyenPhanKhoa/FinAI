@@ -11,6 +11,30 @@ Deploy [FinGPT](https://github.com/AI4Finance-Foundation/FinGPT) (Llama 3.1 8B +
 - **Multiple Interfaces** — CLI, Web UI (Gradio), API server, OpenClaw TUI
 - **Automated Testing** — 14-case test suite covering all capabilities and endpoints
 
+## Limitations
+
+- **No real-time data** — The model has no internet access and cannot fetch live news, stock prices, or market data. It only analyzes text you provide to it.
+- **Training data cutoff: 2023** — The base model (Llama 3.1) and FinGPT LoRA were trained on data up to 2023. The model has no knowledge of events after that date.
+- **Not financial advice** — Outputs are for informational/educational purposes only and should not be used as the sole basis for investment decisions.
+
+## What You Can Ask
+
+You provide the text, the model provides the analysis.
+
+**Works well:**
+- "Analyze the sentiment of this headline: [paste news]"
+- "Summarize this earnings report: [paste text]"
+- "Extract key financial metrics from: [paste data]"
+- "What are the risks of investing in a single sector?"
+- "Explain the P/E ratio and how to use it"
+- "What factors affect bond prices when interest rates rise?"
+- "Compare growth investing vs value investing"
+
+**Won't work:**
+- "What is AAPL's stock price today?" (no internet access)
+- "What happened in the 2025 market crash?" (training cutoff: 2023)
+- "Should I buy TSLA right now?" (no live data to base this on)
+
 ## Hardware Requirements
 
 | Component | Minimum | Recommended |

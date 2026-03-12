@@ -11,6 +11,30 @@ Triển khai [FinGPT](https://github.com/AI4Finance-Foundation/FinGPT) (Llama 3.
 - **Nhiều giao diện** — CLI, Web UI (Gradio), API server, OpenClaw TUI
 - **Kiểm thử tự động** — Bộ test 14 trường hợp bao phủ tất cả tính năng và endpoint
 
+## Hạn Chế
+
+- **Không có dữ liệu thời gian thực** — Mô hình không có kết nối internet, không thể lấy tin tức, giá cổ phiếu hay dữ liệu thị trường trực tiếp. Mô hình chỉ phân tích văn bản mà bạn cung cấp.
+- **Dữ liệu huấn luyện đến 2023** — Mô hình cơ sở (Llama 3.1) và FinGPT LoRA được huấn luyện trên dữ liệu đến năm 2023. Mô hình không biết các sự kiện sau thời điểm đó.
+- **Không phải tư vấn tài chính** — Kết quả chỉ mang tính tham khảo/giáo dục, không nên dùng làm căn cứ duy nhất cho quyết định đầu tư.
+
+## Có Thể Hỏi Gì?
+
+Bạn cung cấp văn bản, mô hình phân tích cho bạn.
+
+**Hoạt động tốt:**
+- "Phân tích tâm lý của tin này: [dán tin tức]"
+- "Tóm tắt báo cáo thu nhập này: [dán văn bản]"
+- "Trích xuất các chỉ số tài chính từ: [dán dữ liệu]"
+- "Rủi ro khi đầu tư tập trung vào một ngành là gì?"
+- "Giải thích P/E ratio và cách sử dụng"
+- "Yếu tố nào ảnh hưởng đến giá trái phiếu khi lãi suất tăng?"
+- "So sánh đầu tư tăng trưởng và đầu tư giá trị"
+
+**Không hoạt động:**
+- "Giá cổ phiếu AAPL hôm nay là bao nhiêu?" (không có internet)
+- "Chuyện gì xảy ra trong vụ sập thị trường 2025?" (dữ liệu huấn luyện đến 2023)
+- "Tôi có nên mua TSLA ngay bây giờ không?" (không có dữ liệu trực tiếp)
+
 ## Yêu Cầu Phần Cứng
 
 | Thành phần | Tối thiểu | Khuyến nghị |
