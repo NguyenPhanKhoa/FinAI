@@ -69,9 +69,11 @@ python tests/test_fingpt.py                      # Run test suite against live s
 ```
 
 **Docker notes:**
-- `--device=/dev/dri` passes Intel GPU/NPU to the container (Linux). On Windows with WSL2 + Docker Desktop, GPU passthrough is automatic if "Use WSL2 integrated GPU scheduling" is enabled in Docker Desktop → Settings → General.
-- Models are cached in `./models/` and `./.cache/huggingface/` — the build step only runs once.
-- The `fingpt:runtime` image is a slim runtime-only image for serving (no build deps).
+- `run.ps1` auto-detects and skips already-completed pipeline steps (download, merge, convert).
+- `run.ps1` auto-starts Docker Desktop if not running on Windows.
+- `--device=/dev/dri` passes Intel GPU/NPU (Linux). On Windows/WSL2, NPU is not available inside Docker — inference falls back to CPU automatically.
+- `fingpt:runtime` is a slim serving image with the OpenVINO model baked in; `fingpt:latest` is the builder image with full ML toolchain.
+- Models on host are cached in `./models/` and `./.cache/huggingface/` — never re-downloaded.
 
 ## Architecture
 

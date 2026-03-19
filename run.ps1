@@ -29,6 +29,13 @@ $ErrorActionPreference = "Stop"
 $SCRIPT_DIR = $PSScriptRoot
 $HUGGINGFACE_TOKEN = $env:HF_TOKEN
 
+# Add Docker to PATH (PowerShell may not inherit the full PATH from Git Bash)
+$DOCKER_BIN = "C:\Program Files\Docker\Docker\resources\bin"
+$DOCKER_PLUGIN = "C:\Program Files\Docker\cli-plugins"
+if ($env:PATH -notlike "*Docker*") {
+    $env:PATH = "$DOCKER_BIN;$DOCKER_PLUGIN;" + $env:PATH
+}
+
 # --- Helpers -----------------------------------------------------------------
 
 function Write-Step($msg) {
@@ -126,23 +133,38 @@ function Install-DockerDesktop {
 
 function Start-DockerIfNeeded {
     if ($IsWindows) {
+        # Try to start the Docker service first
         try {
             $svc = Get-Service -Name "com.docker.service" -ErrorAction SilentlyContinue
             if ($svc -and $svc.Status -ne "Running") {
                 Write-Host "Starting Docker service..." -ForegroundColor Cyan
-                Start-Service "com.docker.service"
+                Start-Service "com.docker.service" -ErrorAction SilentlyContinue
                 Start-Sleep -Seconds 5
             }
         } catch { }
+
+        # If Docker daemon is not reachable, try starting Docker Desktop
+        if (-not (Test-DockerInstalled)) {
+            Write-Host "Docker Desktop is not running. Starting it..." -ForegroundColor Yellow
+            $ddPath = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+            if (Test-Path $ddPath) {
+                Start-Process $ddPath -Verb RunAs
+                Write-Host "Waiting for Docker Desktop to start..." -ForegroundColor Cyan
+                Start-Sleep -Seconds 10
+            } else {
+                Write-Fail "Docker Desktop not found. Please install Docker Desktop."
+                exit 1
+            }
+        }
     }
     $attempts = 0
     while (-not (Test-DockerInstalled)) {
         $attempts++
-        if ($attempts -gt 30) {
-            Write-Fail "Docker is not running. Start Docker Desktop and retry."
+        if ($attempts -gt 60) {
+            Write-Fail "Docker is not running after 2 minutes. Start Docker Desktop manually and retry."
             exit 1
         }
-        Write-Host "Waiting for Docker... ($attempts/30)" -ForegroundColor Yellow
+        Write-Host "Waiting for Docker daemon... ($attempts/60)" -ForegroundColor Yellow
         Start-Sleep -Seconds 2
     }
     Write-Success "Docker is running"
@@ -160,7 +182,11 @@ function Build-DockerImage {
 }
 
 function Invoke-DockerRun {
-    param([string]$Command, [string]$Token)
+    param(
+        [string]$Command,
+        [string]$Token,
+        [string]$Image = "fingpt:latest"
+    )
 
     $runningOnLinux = $IsLinux -or (Test-Path "/dev/dri")
 
@@ -177,7 +203,7 @@ function Invoke-DockerRun {
         "-v", "${SCRIPT_DIR}\server.py:/app/server.py:ro",
         "-v", "${SCRIPT_DIR}\app.py:/app/app.py:ro",
         "-v", "${SCRIPT_DIR}\check_hardware.py:/app/check_hardware.py:ro",
-        "fingpt:latest",
+        $Image,
         $Command
     )
 
@@ -261,8 +287,14 @@ function Step-ConvertOpenVINO {
 }
 
 function Step-RunInference {
-    Write-Step "Running FinGPT inference (NPU/CPU)"
-    Invoke-DockerRun -Command "python scripts/04_run_inference.py" -Token ""
+    Write-Step "Running FinGPT inference"
+    # fingpt:runtime has the model baked in (faster startup).
+    # If not available, fall back to fingpt:latest with volume mount.
+    $img = if (docker image inspect fingpt:runtime -f "{{.Id}}" 2>$null) { "fingpt:runtime" } else { "fingpt:latest" }
+    if ($img -eq "fingpt:latest") {
+        Write-Info "fingpt:runtime not found, using fingpt:latest with volume mount"
+    }
+    Invoke-DockerRun -Command "python scripts/04_run_inference.py --device CPU" -Token "" -Image $img
 }
 
 function Step-RunServer {

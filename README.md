@@ -47,6 +47,41 @@ You provide the text, the model provides the analysis.
 
 ## Quick Start
 
+### Option A: Docker (recommended — zero install friction)
+
+```powershell
+# 1. Install Docker Desktop if not already installed
+#    run.ps1 will offer to download it automatically
+
+# 2. Clone / pull the latest code
+git pull
+
+# 3. Set your HuggingFace token
+copy .env.example .env
+# Edit .env and add your HF_TOKEN
+
+# 4. One command — everything runs inside Docker:
+.\run.ps1 -FullPipeline
+```
+
+**How it works:** `run.ps1` auto-detects which steps are already done and skips them. If `models/merged/` exists, it jumps straight to Step 3 (convert). Models are persisted on your disk via volume mounts, so downloads are never repeated.
+
+**Run inference or server after pipeline:**
+
+```powershell
+.\run.ps1 -Inference     # Interactive CLI (CPU fallback on Windows)
+.\run.ps1 -Server         # API server at http://localhost:8000
+.\run.ps1                 # Interactive menu
+```
+
+**Free disk space after pipeline:**
+
+```powershell
+.\run.ps1 -FullPipeline -CleanUp   # Deletes base + merged models after each step
+```
+
+### Option B: Native (without Docker)
+
 ```powershell
 # 1. Setup environment (Python 3.11 required)
 powershell -ExecutionPolicy Bypass -File setup.ps1
@@ -190,26 +225,30 @@ Results are saved to `test_results/` as both `.txt` report and `.json` data.
 FinAI/
 ├── server.py                      # OpenAI-compatible API server (FastAPI)
 ├── app.py                         # Gradio web UI (connects to server.py)
+├── run.ps1                        # Docker runner: auto-install + pipeline + cleanup
+├── Dockerfile                     # Multi-stage: builder (ML deps) + runtime (slim)
+├── docker-compose.yml             # Docker Compose orchestrator
+├── .dockerignore                  # Excludes venv, cache, large intermediate models
 ├── configs/
 │   └── model_config.json          # Model, quantization, and inference settings
 ├── scripts/
 │   ├── check_hardware.py          # Hardware compatibility check
 │   ├── 01_download_models.py      # Download base + LoRA from HuggingFace
-│   ├── 02_merge_lora.py           # Merge LoRA into base model (PEFT)
+│   ├── 02_merge_lora.py          # Merge LoRA into base model (PEFT)
 │   ├── 03_convert_openvino.py     # Convert to OpenVINO IR INT4
-│   └── 04_run_inference.py        # CLI inference on NPU
+│   └── 04_run_inference.py        # CLI inference on NPU/CPU
 ├── tests/
 │   ├── test_fingpt.py             # Automated test suite (14 cases)
 │   ├── test_report_*.txt          # Test report
 │   └── test_report_*.json         # Test results (raw data)
 ├── models/                        # (gitignored) model files
-│   ├── base/                      # Downloaded base + LoRA
-│   ├── merged/                    # Merged FP16 model
-│   └── openvino/                  # Final INT4 OpenVINO IR
+│   ├── base/                      # Downloaded base + LoRA (~16GB)
+│   ├── merged/                    # Merged FP16 model (~16GB)
+│   └── openvino/                  # Final INT4 OpenVINO IR (~4.5GB)
 ├── requirements.txt
-├── setup.ps1                      # Windows setup script
+├── setup.ps1                      # Windows setup script (native)
 ├── .env.example                   # Environment template
-└── CLAUDE.md                      # Claude Code project instructions
+└── CLAUDE.md                     # Claude Code project instructions
 ```
 
 ## Configuration

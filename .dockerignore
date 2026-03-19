@@ -38,6 +38,7 @@ logs/
 .DS_Store
 Thumbs.db
 
-# Large model files — we mount these from host as volumes
-# so no need to copy them into the image
-models/
+# Large intermediate models — mounted as volumes in builder stage.
+# The converted openvino model IS copied into the runtime image.
+models/base/
+models/merged/

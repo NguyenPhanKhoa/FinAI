@@ -22,20 +22,23 @@
 #   automatic if "WSL2 integrated GPU scheduling" is enabled in Docker Desktop.
 
 # ─── Shared base ───────────────────────────────────────────────────────────────
-# syntax=docker/dockerfile:1
 FROM python:3.11-slim AS shared-deps
 
 SHELL ["/bin/bash", "-c"]
 WORKDIR /app
 
+# Install system deps.
+# NOTE: on Debian 12 (bookworm) the package names changed:
+#   libgl1-mesa-glx -> libgl1 (or libgl1-mesa-dri)
+#   libnuma-dev      -> libnuma1 (runtime) + libnuma-dev (dev)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         git \
         cpio \
-        libgl1-mesa-glx \
+        libgl1 \
         libglib2.0-0 \
         libgomp1 \
-        libnuma-dev \
+        libnuma1 \
         ocl-icd-libopencl1 \
         opencl-headers \
     && rm -rf /var/lib/apt/lists/*
@@ -57,8 +60,7 @@ ENV PYTHONUNBUFFERED=1
 ENV HF_HUB_DOWNLOAD_TIMEOUT=300
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
-# Slim serving image. Models are baked in via COPY from builder,
-# so no volume mount of models/ is needed at runtime.
+# Slim serving image. OpenVINO model is copied directly from build context.
 FROM shared-deps AS runtime
 
 COPY requirements.txt .
@@ -74,13 +76,12 @@ RUN pip install --no-cache-dir --upgrade pip && \
         python-dotenv && \
     pip cache purge
 
-# Copy ONLY the converted OpenVINO model from builder (small, ~1-2 GB)
-# If builder ran scripts/03_convert_openvino.py, the model is at /app/models/openvino
-COPY --from=builder /app/models/openvino  /app/models/openvino
-COPY --from=builder /app/configs          /app/configs
-COPY --from=builder /app/scripts          /app/scripts
-COPY --from=builder /app/server.py        /app/server.py
-COPY --from=builder /app/app.py           /app/app.py
+# Copy OpenVINO model + app files directly from build context
+COPY models/openvino/ /app/models/openvino/
+COPY configs/         /app/configs/
+COPY scripts/         /app/scripts/
+COPY server.py        /app/server.py
+COPY app.py           /app/app.py
 
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
