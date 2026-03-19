@@ -1,0 +1,43 @@
+# FinAI Docker Compose
+#
+# Builds the "builder" image (full ML toolchain). Models live on the host
+# (mounted as volumes) so they persist across runs and container rebuilds.
+#
+# Usage:
+#   docker compose build                        # Build image
+#   docker compose run --rm fingpt python scripts/03_convert_openvino.py
+#   docker compose run --rm fingpt python scripts/04_run_inference.py
+#
+# To bake openvino model into a slim serving image after pipeline completes:
+#   docker build --target runtime -t fingpt:runtime .
+#   docker run --rm --device=/dev/dri:/dev/dri -p 8000:8000 fingpt:runtime
+#
+# Full pipeline via run.ps1:
+#   .\run.ps1 -FullPipeline       # auto-skips done steps
+#   .\run.ps1 -FullPipeline -CleanUp   # frees disk after each step
+
+services:
+  fingpt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: fingpt:latest
+    container_name: fingpt
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+      - PYTHONUNBUFFERED=1
+      - HF_HUB_DOWNLOAD_TIMEOUT=300
+      - TRANSFORMERS_CACHE=/app/.cache/huggingface
+    volumes:
+      # Mount host model dirs — persists across container runs, no re-download needed
+      - ./models:/app/models
+      - ./.cache/huggingface:/app/.cache/huggingface:rw
+      - ./configs:/app/configs:ro
+      - ./scripts:/app/scripts:ro
+    devices:
+      - /dev/dri:/dev/dri        # Intel GPU/NPU (Linux); auto on Windows/WSL2
+    shm_size: "4gb"              # Large shared memory for big models
+    network_mode: host
+    stdin_open: true            # -i
+    tty: true                    # -t  (interactive inference)

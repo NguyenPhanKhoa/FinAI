@@ -22,6 +22,7 @@ The deployment is a 4-step sequential pipeline — each script must complete bef
 
 ## Commands
 
+### Native (no Docker)
 ```bash
 # Setup
 powershell -ExecutionPolicy Bypass -File setup.ps1
@@ -29,7 +30,7 @@ powershell -ExecutionPolicy Bypass -File setup.ps1
 # Hardware check
 python scripts/check_hardware.py
 
-# Full pipeline
+# Full pipeline (native)
 python scripts/01_download_models.py
 python scripts/02_merge_lora.py
 python scripts/03_convert_openvino.py
@@ -43,6 +44,34 @@ python app.py                                    # Gradio web UI (requires serve
 # Testing
 python tests/test_fingpt.py                      # Run test suite against live server
 ```
+
+### Docker (recommended — zero install friction)
+
+```powershell
+# First time: copy .env and add your HF_TOKEN
+# Edit .env and set: HF_TOKEN=hf_...
+
+# Full automated pipeline (download + merge + convert)
+.\run.ps1 -FullPipeline
+
+# Or step-by-step
+.\run.ps1 -Step 1        # Download models
+.\run.ps1 -Step 2        # Merge LoRA
+.\run.ps1 -Step 3        # Convert to OpenVINO
+.\run.ps1 -Step 4        # Run inference (interactive)
+.\run.ps1 -Server        # Start API server (port 8000)
+
+# Interactive menu
+.\run.ps1
+
+# Build Docker image only
+.\run.ps1 -Build
+```
+
+**Docker notes:**
+- `--device=/dev/dri` passes Intel GPU/NPU to the container (Linux). On Windows with WSL2 + Docker Desktop, GPU passthrough is automatic if "Use WSL2 integrated GPU scheduling" is enabled in Docker Desktop → Settings → General.
+- Models are cached in `./models/` and `./.cache/huggingface/` — the build step only runs once.
+- The `fingpt:runtime` image is a slim runtime-only image for serving (no build deps).
 
 ## Architecture
 

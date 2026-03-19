@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.eggs
+*.whl
+
+# Virtual environment (not needed inside container)
+.venv
+venv
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Test results / logs
+test_results/
+tests/
+logs/
+*.log
+
+# Cache
+.cache/
+*.cache
+
+# Documentation
+*.md
+!requirements.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large model files — we mount these from host as volumes
+# so no need to copy them into the image
+models/
