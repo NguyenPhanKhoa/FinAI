@@ -62,48 +62,42 @@ FinAI phục vụ hai nhóm người dùng chính:
 
 ## Chỉ cần 3 bước để chạy FinGPT!
 
-### Bước 1: Thêm HuggingFace Token
+### Bước 1: Copy & Paste (30 giây)
 
-Tạo file `.env`:
+Mở PowerShell và chạy:
 ```powershell
-copy .env.example .env
-notepad .env
+copy .env.example .env; notepad .env
 ```
 
-Thêm dòng sau vào `.env`:
+Sau đó thêm dòng này vào file `.env`:
 ```
-HF_TOKEN=hf_your_token_here
+HF_TOKEN=hf_YOUR_TOKEN_HERE
 ```
 
-> **[ẢNH CẦN CHỤP 1]** — File `.env` đã chỉnh sửa với `HF_TOKEN=...`
+> **[ẢNH CẦN CHỤP 1]** — File `.env` đã lưu với `HF_TOKEN=...`
 
 ---
 
-### Bước 2: Accept Llama 3.1 License
+### Bước 2: Accept License
 
-Truy cập trình duyệt:
+Mở trình duyệt:
 ```
 https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
 ```
 
-Đăng nhập → Accept License.
+Đăng nhập → **Accept License**
 
-> **[ẢNH CẦN CHỤP 2]** — Trang HuggingFace đã accept license
+> **[ẢNH CẦN CHỤP 2]** — Đã accept license thành công
 
 ---
 
-### Bước 3: Chạy một lệnh duy nhất!
+### Bước 3: Copy & Paste (1 lệnh duy nhất!)
 
 ```powershell
 .\run.ps1 -FullPipeline
 ```
 
-Xong! Docker sẽ tự động:
-- Tải models về
-- Merge LoRA
-- Convert sang OpenVINO
-
-Quá trình mất **30–60 phút** lần đầu. Các lần sau nhanh hơn nhiều.
+Xong! Docker tự động làm hết: download → merge → convert.
 
 > **[ẢNH CẦN CHỤP 3]** — Output "Pipeline complete!"
 
@@ -121,12 +115,25 @@ Mở trình duyệt: `http://localhost:8000`
 
 ---
 
+### Tự động kiểm tra trước khi bắt đầu
+
+Chạy script tự động kiểm tra:
+```powershell
+python scripts/00_prepare.py
+```
+
+Script sẽ kiểm tra: Python version, Docker, HF_TOKEN, License.
+
+---
+
 ### Xem thêm
 
-- **Menu tương tác:** `.\run.ps1`
-- **Test nhanh CLI:** `.\run.ps1 -Inference`
-- **Gradio Web UI:** `python app.py --api-url http://127.0.0.1:8000`
-- **Cài đặt không dùng Docker:** Xem [PHẦN 2B](#phần-2b-cài-đặt-native-không-dùng-docker)
+| Lệnh | Mô tả |
+|-------|--------|
+| `.\run.ps1` | Menu tương tác |
+| `.\run.ps1 -Inference` | Test nhanh CLI |
+| `.\run.ps1 -Server` | Chạy API Server |
+| **Cài đặt native** | Xem [PHẦN 2B](#phần-2b-cài-đặt-native-không-dùng-docker) |
 
 ---
 
