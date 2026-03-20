@@ -1,8 +1,8 @@
-# FinAI — Báo Cáo Triển Khhai & Mô Tả Kỹ Thuật
+# FinAI — Báo Cáo Triển Khai & Mô Tả Kỹ Thuật
 
-**Phiên bản:** 1.1
+**Phiên bản:** 1.2
 **Ngày cập nhật:** 2026-03-20
-**Phần cứng mục tiêu:** Intel Core Ultra 7 258V (Lunar Lake), 47 TOPS NPU, 32GB RAM, Intel Arc 140V GPU
+**Phần cứng mục tiêu:** Intel Core Ultra 7 258V (Lunar Lake), 47 TOPS NPU, 32GB RAM, Intel Arc 140V GPU 16GB
 
 ---
 
@@ -10,19 +10,22 @@
 
 ## 1.1. FinAI là gì?
 
-FinAI là hệ thống triển khai mô hình ngôn ngữ lớn FinGPT (dựa trên Llama 3.1 8B Instruct + LoRA fine-tune) trên Neural Processing Unit (NPU) tích hợp sẵn trong chip Intel Core Ultra thế hệ mới (Lunar Lake), sử dụng OpenVINO với lượng tử hóa INT4 symmetric.
+FinAI là hệ thống triển khai mô hình ngôn ngữ lớn FinGPT (dựa trên Llama 3.1 8B Instruct + LoRA fine-tune) trên phần cứng Intel cục bộ — **Intel Arc 140V GPU 16GB** (ưu tiên) hoặc **NPU 47 TOPS** (tiết kiệm điện) — sử dụng OpenVINO với lượng tử hóa INT4 symmetric.
 
-Nói cách khác, FinAI cho phép chạy một mô hình AI tài chính 7 tỷ tham số **hoàn toàn trên phần cứng cục bộ** — không cần GPU rời, không cần cloud, không cần trả phí API.
+Nói cách khác, FinAI cho phép chạy một mô hình AI tài chính 7 tỷ tham số **hoàn toàn trên phần cứng cục bộ** — không cần cloud, không cần trả phí API.
 
 ```
-Phần cứng chạy FinGPT:
-┌─────────────────────────────────────────────┐
-│  Intel Core Ultra 7 258V                    │
-│  ├── NPU: 47 TOPS (chạy model)             │  ← Chi phí điện: ~7W
-│  └── CPU + GPU tích hợp (hỗ trợ)          │
-│  RAM: 32 GB                                 │
-└─────────────────────────────────────────────┘
+Phần cứng chạy FinGPT (ưu tiên GPU):
+┌─────────────────────────────────────────────────┐
+│  Intel Core Ultra 7 258V + Intel Arc 140V      │
+│  ├── GPU: Arc 140V 16GB — TỐC ĐỘ NHANH NHẤT   │  ← Ưu tiên dùng (Intel Arc 16GB)
+│  ├── NPU: 47 TOPS — Tiết kiệm điện            │  ← Low power inference
+│  └── CPU: fallback nếu GPU/NPU lỗi            │
+│  RAM: 32 GB                                     │
+└─────────────────────────────────────────────────┘
 ```
+
+> **GPU (Arc 140V 16GB) cho tốc độ nhanh hơn CPU ~5-10×.** NPU (47 TOPS) tiết kiệm điện hơn nhưng chậm hơn GPU.
 
 ## 1.2. Dự án dành cho ai?
 
@@ -37,9 +40,9 @@ FinAI phục vụ hai nhóm người dùng chính:
 
 | Khía cạnh | Chi tiết | Tác động |
 |---|---|---|
-| **Giảm chi phí vận hành** | Không cần subscription API key (OpenAI/Anthropic). Inference chạy hoàn toàn trên NPU cục bộ — chi phí điện ~10–15W so với cloud GPU ~300W/session. | Giảm chi phí vận hành hàng tháng từ hàng trăm USD (cloud API) xuống gần bằng không. |
+| **Giảm chi phí vận hành** | Không cần subscription API key (OpenAI/Anthropic). Inference chạy hoàn toàn trên Arc GPU / NPU cục bộ — chi phí điện ~25-40W so với cloud GPU ~300W/session. | Giảm chi phí vận hành hàng tháng từ hàng trăm USD (cloud API) xuống gần bằng không. |
 | **Bảo mật dữ liệu** | Dữ liệu tài chính nhạy cảm (báo cáo tài chính, chiến lược đầu tư, thông tin khách hàng) không rời khỏi máy local. | Tuân thủ quy định bảo mật dữ liệu doanh nghiệp (GDPR, NDPL...). Giảm rủi ro rò rỉ dữ liệu. |
-| **Thúc đẩy AI cạnh tranh** | Minh chứng rằng NPU (vốn chỉ ~7W) có thể chạy LLM 7B thay vì phải dùng GPU rời (75W+). | Mở đường cho AI xanh (green AI), AI di động, AI edge computing. Giảm carbon footprint của AI. |
+| **Thúc đẩy AI cạnh tranh** | Minh chứng rằng NPU/Arc GPU tích hợp sẵn có thể chạy LLM 7B thay vì phải dùng GPU rời (75W+). | Mở đường cho AI xanh (green AI), AI di động, AI edge computing. Giảm carbon footprint của AI. |
 | **Tiếp cận công nghệ** | Cho phép cá nhân, doanh nghiệp vừa và nhỏ (SMB), thị trường mới nổi tiến cận LLM tài chính mà không cần hạ tầng cloud đắt đỏ. | Dân chủ hóa AI — bất kỳ ai có laptop Intel Lunar Lake đều có thể chạy. |
 | **Tái sử dụng phần cứng** | Tận dụng NPU tích hợp sẵn trên laptop/PC Intel Lunar Lake — phần cứng thường bị bỏ phí vì không có ứng dụng sử dụng. | Giảm e-waste, tối ưu hóa vòng đời thiết bị. |
 
@@ -50,7 +53,7 @@ FinAI phục vụ hai nhóm người dùng chính:
 | **Base model** | Meta Llama 3.1 8B Instruct (8 tỷ tham số) |
 | **Fine-tune adapter** | FinGPT LoRA adapter (PEFT) — chuyên biệt tài chính |
 | **Inference engine** | OpenVINO GenAI (openvino-genai >= 2025.0.0) |
-| **Phần cứng** | Intel NPU (47 TOPS), Intel Arc 140V GPU, 32GB RAM |
+| **Phần cứng** | Intel Arc 140V GPU 16GB (ưu tiên) · Intel NPU 47 TOPS (tiết kiệm điện) · CPU (fallback) · 32GB RAM |
 | **Lượng tử hóa** | INT4 symmetric, ratio=1.0, group_size=-1 (channel-wise) |
 | **Kích thước model** | ~8 GB (base) + ~8 GB (LoRA) → ~16 GB (merged FP16) → ~4.5 GB (INT4) |
 | **Nền tảng** | Windows 11, Python 3.11 |
@@ -60,7 +63,20 @@ FinAI phục vụ hai nhóm người dùng chính:
 
 # PHẦN 2: HƯỚNG DẪN TRIỂN KHAI (DOCKER)
 
-## Chỉ cần 3 bước để chạy FinGPT!
+## Chỉ cần 4 bước để chạy FinGPT!
+
+### Bước 0: Cài đặt Docker Desktop
+
+Tải và cài Docker Desktop:
+```
+https://docker.com/desktop
+```
+
+Sau khi cài xong, mở Docker Desktop và đợi cho đến khi thấy icon "Docker is running".
+
+> **[ẢNH CẦN CHỤP 0]** — Docker Desktop đang chạy
+
+---
 
 ### Bước 1: Copy & Paste (30 giây)
 
@@ -137,6 +153,77 @@ Script sẽ kiểm tra: Python version, Docker, HF_TOKEN, License.
 
 ---
 
+# PHẦN 2B: CÀI ĐẶT NATIVE (KHÔNG DÙNG DOCKER)
+
+## Chỉ cần 5 bước để chạy FinGPT!
+
+### Bước 0: Clone/Download Project
+
+Tải project về máy:
+```powershell
+git clone https://github.com/NguyenPhanKhoa/FinAI.git
+cd FinAI
+```
+
+Hoặc tải ZIP từ GitHub và giải nén.
+
+---
+
+### Bước 1: Thêm HuggingFace Token
+
+```powershell
+copy .env.example .env
+notepad .env
+```
+
+Thêm dòng sau vào `.env`:
+```
+HF_TOKEN=hf_your_token_here
+```
+
+---
+
+### Bước 2: Accept Llama 3.1 License
+
+Truy cập trình duyệt:
+```
+https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
+```
+
+Đăng nhập → Accept License.
+
+---
+
+### Bước 3: Setup môi trường
+
+```powershell
+powershell -ExecutionPolicy Bypass -File setup.ps1
+.\.venv\Scripts\Activate.ps1
+```
+
+---
+
+### Bước 4: Chạy Pipeline
+
+```powershell
+python scripts/01_download_models.py
+python scripts/02_merge_lora.py
+python scripts/03_convert_openvino.py
+```
+
+---
+
+### Bước 5: Chạy FinGPT
+
+```powershell
+python scripts/04_run_inference.py       # CLI
+python server.py                         # API Server
+```
+
+Mở trình duyệt: `http://localhost:8000`
+
+---
+
 # PHẦN 3: MÔ TẢ KỸ THUẬT TỪNG THÀNH PHẦN CODE
 
 ## 3.1. Cấu trúc thư mục project
@@ -146,23 +233,24 @@ FinAI/                          # Root directory
 ├── configs/
 │   └── model_config.json       # ⬅ Single source of truth cho toàn bộ config
 ├── scripts/
-│   ├── check_hardware.py       # Kiểm tra NPU driver + device
+│   ├── check_hardware.py       # Kiểm tra GPU + NPU driver + device
 │   ├── 01_download_models.py   # Download HuggingFace models
 │   ├── 02_merge_lora.py        # Merge LoRA vào base model
 │   ├── 03_convert_openvino.py  # Export OpenVINO IR + INT4 quantization
-│   └── 04_run_inference.py     # CLI inference tool
+│   └── 04_run_inference.py     # CLI inference tool (GPU/NPU/CPU)
 ├── models/                     # (gitignored — không đẩy lên git)
 │   ├── base/                   #   models/base/llama3.1-8b/ + fingpt-lora/
 │   ├── merged/                 #   models/merged/ (FP16, ~16 GB)
 │   └── openvino/               #   models/openvino/ (INT4, ~4.5 GB)
 ├── tests/
 │   ├── test_fingpt.py          # English test suite (14 cases)
-│   └── test_fingpt_vi.py       # Vietnamese test suite
+│   └── test_report_*.json      # Kết quả test
 ├── server.py                   # FastAPI OpenAI-compatible server
 ├── app.py                      # Gradio web UI
-├── setup.ps1                   # Windows setup script
-├── run.ps1                     # Docker runner script
-├── Dockerfile                  # Multi-stage Docker build
+├── setup.ps1                   # Windows setup script (native)
+├── run.ps1                     # Docker runner script (tự động chọn GPU/CPU)
+├── Dockerfile                  # Multi-stage Docker build (builder + runtime)
+├── docker-compose.yml          # Docker Compose orchestrator
 ├── requirements.txt            # Python dependencies
 ├── CLAUDE.md                   # Claude Code project instructions
 ├── FinAI_Report_VN.md          # Báo cáo triển khai (tiếng Việt)
@@ -207,7 +295,7 @@ File này chứa **toàn bộ config** của dự án. Tất cả scripts đều
 | `quantization.symmetric: true` | Symmetric quantization (không có offset/channel riêng) | **Bắt buộc cho NPU Intel** — NPU không hỗ trợ asymmetric |
 | `quantization.ratio: 1.0` | 100% weights nén INT4, không trộn FP16/INT4 | Đảm bảo tất cả layers đều chạy trên NPU với INT4 |
 | `quantization.group_size: -1` | Channel-wise quantization (mỗi channel 1 scale factor) | Chất lượng cao hơn group quantization — dùng cho 7B+ models |
-| `inference.device: NPU` | Device inference mặc định | Thay đổi bằng `--device CPU` nếu NPU lỗi |
+| `inference.device` | Device inference mặc định (ưu tiên GPU → NPU → CPU) | Thay đổi: `--device GPU`, `--device NPU`, hoặc `--device CPU` |
 | `inference.max_new_tokens: 512` | Số token tối đa model được sinh ra | Giới hạn độ dài response để tránh NPU generation quá lâu |
 | `paths.*` | Đường dẫn tương đối từ project root | Gitignored — model files không đẩy lên git |
 

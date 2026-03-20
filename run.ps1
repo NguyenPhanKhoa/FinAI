@@ -327,44 +327,56 @@ function Step-ConvertOpenVINO {
 }
 
 function Step-RunInference {
+    param([string]$Device = "")
+
     Write-Step "Running FinGPT inference"
-
-    # Check which image is available
-    $hasRuntime = $false
-    $hasLatest = $false
-
-    try {
-        $r = docker image inspect fingpt:runtime -f "{{.Id}}" 2>$null
-        if ($r) { $hasRuntime = $true }
-    } catch { }
-    try {
-        $l = docker image inspect fingpt:latest -f "{{.Id}}" 2>$null
-        if ($l) { $hasLatest = $true }
-    } catch { }
 
     $runningOnLinux = $IsLinux -or (Test-Path "/dev/dri")
 
-    if ($hasRuntime) {
-        Write-Info "Using fingpt:runtime (model baked in)"
+    # Auto-detect best device if not specified
+    if (-not $Device) {
         if ($runningOnLinux) {
-            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py") -Token "" -Image "fingpt:runtime"
+            $Device = "GPU"
         } else {
-            Write-Info "NPU not accessible inside Docker on Windows — using CPU"
-            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py", "--device", "CPU") -Token "" -Image "fingpt:runtime"
+            # On Windows (native), prefer GPU; fall back to CPU if unavailable
+            try {
+                $result = python -c "import openvino_genai as ov; c=ov.Core(); print('GPU' if 'GPU' in c.available_devices else 'CPU')" 2>$null
+                if ($result) { $Device = $result } else { $Device = "GPU" }
+            } catch { $Device = "GPU" }
         }
-    } elseif ($hasLatest) {
-        Write-Info "Using fingpt:latest"
-        if ($runningOnLinux) {
-            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py") -Token "" -Image "fingpt:latest"
+    }
+
+    Write-Info "Using device: $Device"
+
+    if ($runningOnLinux) {
+        # Inside Docker on Linux: use volume-mounted image if available
+        $hasRuntime = $false
+        $hasLatest = $false
+        try {
+            $r = docker image inspect fingpt:runtime -f "{{.Id}}" 2>$null
+            if ($r) { $hasRuntime = $true }
+        } catch { }
+        try {
+            $l = docker image inspect fingpt:latest -f "{{.Id}}" 2>$null
+            if ($l) { $hasLatest = $true }
+        } catch { }
+
+        if ($hasRuntime) {
+            Write-Info "Using fingpt:runtime"
+            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py", "--device", $Device) -Token "" -Image "fingpt:runtime"
+        } elseif ($hasLatest) {
+            Write-Info "Using fingpt:latest"
+            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py", "--device", $Device) -Token "" -Image "fingpt:latest"
         } else {
-            Write-Info "NPU not accessible inside Docker on Windows — using CPU"
-            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py", "--device", "CPU") -Token "" -Image "fingpt:latest"
+            Write-Fail "No Docker image found!"
+            Write-Info "Building fingpt:latest first..."
+            docker build -t fingpt:latest . 2>&1 | Out-Null
+            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py", "--device", $Device) -Token "" -Image "fingpt:latest"
         }
     } else {
-        Write-Fail "No Docker image found!"
-        Write-Info "Building builder image first..."
-        docker build -t fingpt:latest . 2>&1 | Out-Null
-        Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py", "--device", "CPU") -Token "" -Image "fingpt:latest"
+        # Native on Windows: run directly with Python
+        Write-Info "Running natively (not inside Docker)..."
+        python scripts/04_run_inference.py --device $Device
     }
 }
 

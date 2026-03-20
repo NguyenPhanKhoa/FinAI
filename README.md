@@ -1,10 +1,10 @@
-# FinAI — FinGPT on Intel NPU
+# FinAI — FinGPT on Intel NPU + Arc GPU
 
-Deploy [FinGPT](https://github.com/AI4Finance-Foundation/FinGPT) (Llama 3.1 8B + LoRA) on Intel Core Ultra 7 258V NPU using OpenVINO with INT4 symmetric quantization. Includes an OpenAI-compatible API server, Gradio web UI, and OpenClaw AI Agent integration.
+Deploy [FinGPT](https://github.com/AI4Finance-Foundation/FinGPT) (Llama 3.1 8B + LoRA) on Intel NPU or Arc GPU using OpenVINO with INT4 symmetric quantization. Includes an OpenAI-compatible API server, Gradio web UI, and OpenClaw AI Agent integration.
 
 ## Features
 
-- **NPU Acceleration** — Runs on Intel NPU (47 TOPS) with INT4 quantization via OpenVINO
+- **NPU + GPU Acceleration** — Runs on Intel NPU (47 TOPS) or Arc 140V GPU (Intel Arc 140V 16GB) with INT4 quantization via OpenVINO
 - **OpenAI-Compatible API** — Drop-in replacement server for any OpenAI client
 - **Streaming Support** — SSE streaming for real-time token delivery
 - **Financial AI** — Sentiment analysis, market forecasting, risk assessment, financial text processing
@@ -42,8 +42,10 @@ You provide the text, the model provides the analysis.
 | **CPU** | Intel Core Ultra (Lunar Lake) with NPU | Intel Core Ultra 7 258V |
 | **RAM** | 16 GB | 32 GB |
 | **Storage** | 30 GB free | 50 GB free |
+| **GPU** | Intel Arc (optional — faster than CPU) | Intel Arc 140V 16GB |
 | **NPU Driver** | [Intel NPU Driver](https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html) | Latest version |
-| **OS** | Windows 11 | Windows 11 |
+| **GPU Driver** | Intel Graphics Driver (for Arc GPU) | Latest version |
+| **OS** | Windows 10/11 | Windows 11 |
 
 ## Quick Start
 
@@ -69,7 +71,7 @@ copy .env.example .env
 **Run inference or server after pipeline:**
 
 ```powershell
-.\run.ps1 -Inference     # Interactive CLI (CPU fallback on Windows)
+.\run.ps1 -Inference     # Interactive CLI (auto-detects GPU on native, CPU in Docker on Windows)
 .\run.ps1 -Server         # API server at http://localhost:8000
 .\run.ps1                 # Interactive menu
 ```
@@ -117,7 +119,7 @@ Meta Llama 3.1 8B Instruct (base)  +  FinGPT LoRA adapter
                     ↓ convert (optimum-cli)
         OpenVINO IR + INT4 symmetric quantization (~4.5 GB)
                     ↓ deploy
-              Intel NPU via openvino-genai
+              Intel Arc GPU / NPU / CPU via openvino-genai
 ```
 
 ## Usage
@@ -127,8 +129,10 @@ Meta Llama 3.1 8B Instruct (base)  +  FinGPT LoRA adapter
 The API server is OpenAI-compatible, so any OpenAI client can connect:
 
 ```bash
-python server.py                    # default: NPU, port 8000
-python server.py --device CPU       # fallback to CPU
+python server.py                    # auto-detect best device, port 8000
+python server.py --device GPU       # Intel Arc GPU (recommended on your hardware)
+python server.py --device NPU       # Intel NPU (Lunar Lake)
+python server.py --device CPU        # CPU fallback
 python server.py --port 9000        # custom port
 ```
 
@@ -166,8 +170,10 @@ Requires `server.py` to be running.
 ### CLI Interactive
 
 ```bash
-python scripts/04_run_inference.py              # NPU
-python scripts/04_run_inference.py --device CPU  # fallback
+python scripts/04_run_inference.py              # auto-detect best device
+python scripts/04_run_inference.py --device GPU  # force GPU (Intel Arc recommended)
+python scripts/04_run_inference.py --device CPU  # CPU fallback
+python scripts/04_run_inference.py --device NPU  # Intel NPU (Lunar Lake)
 ```
 
 ### OpenClaw AI Agent
@@ -268,18 +274,30 @@ Edit `configs/model_config.json`:
 
 ## Device Fallback
 
-If NPU has issues, fall back to CPU or GPU:
+OpenVINO auto-detects the best available device. Priority order: **GPU → NPU → CPU**.
+
+| Device | Speed | Notes |
+|--------|-------|-------|
+| **GPU** | Fastest | Intel Arc 140V 16GB — best performance on your hardware |
+| **NPU** | Moderate | Intel Core Ultra 7 258V (47 TOPS), low power |
+| **CPU** | Slowest | Fallback only |
+
+Override explicitly:
 
 ```bash
-python server.py --device CPU
+python server.py --device GPU       # Intel Arc GPU (recommended)
+python server.py --device NPU       # Intel NPU (Lunar Lake)
+python server.py --device CPU        # CPU fallback
 python scripts/04_run_inference.py --device GPU
 ```
+
+> **Note:** On Windows, Docker Desktop cannot access the NPU or Arc GPU directly. Run natively (`python server.py`) for GPU/NPU acceleration. Docker on Linux supports GPU/NPU via `--device=/dev/dri`.
 
 ## Tech Stack
 
 - **Model**: Meta Llama 3.1 8B Instruct + FinGPT LoRA (financial fine-tune)
 - **Runtime**: OpenVINO GenAI with INT4 symmetric quantization
-- **Hardware**: Intel Core Ultra 7 258V NPU (47 TOPS, Lunar Lake)
+- **Hardware**: Intel Arc 140V 16GB GPU · Intel Core Ultra 7 258V NPU (47 TOPS, Lunar Lake)
 - **Server**: FastAPI + Uvicorn (OpenAI-compatible API)
 - **Web UI**: Gradio
 - **Agent**: OpenClaw AI Agent platform
