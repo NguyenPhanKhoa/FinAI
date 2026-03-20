@@ -183,7 +183,7 @@ function Build-DockerImage {
 
 function Invoke-DockerRun {
     param(
-        [string]$Command,
+        [string[]]$CommandArgs,
         [string]$Token,
         [string]$Image = "fingpt:latest"
     )
@@ -192,9 +192,7 @@ function Invoke-DockerRun {
 
     $baseArgs = @(
         "run", "--rm",
-        "--network=host",
         "--shm-size=4gb",
-        "-e", "HF_TOKEN=$Token",
         "-e", "PYTHONUNBUFFERED=1",
         "-v", "${SCRIPT_DIR}\models:/app/models",
         "-v", "${SCRIPT_DIR}\.cache\huggingface:/app/.cache/huggingface:rw",
@@ -202,14 +200,21 @@ function Invoke-DockerRun {
         "-v", "${SCRIPT_DIR}\scripts:/app/scripts:ro",
         "-v", "${SCRIPT_DIR}\server.py:/app/server.py:ro",
         "-v", "${SCRIPT_DIR}\app.py:/app/app.py:ro",
-        "-v", "${SCRIPT_DIR}\check_hardware.py:/app/check_hardware.py:ro",
-        $Image,
-        $Command
+        "-v", "${SCRIPT_DIR}\check_hardware.py:/app/check_hardware.py:ro"
     )
 
     if ($runningOnLinux) {
-        $baseArgs = @("run", "--rm", "--device=/dev/dri:/dev/dri") + $baseArgs
+        # Linux: use host network and pass NPU/GPU device
+        $baseArgs = @("run", "--rm", "--network=host", "--device=/dev/dri:/dev/dri") + $baseArgs
     }
+    # Windows: no --network=host (not supported), no --device (NPU inaccessible inside Docker)
+
+    if ($Token) {
+        $baseArgs += @("-e", "HF_TOKEN=$Token")
+    }
+
+    $baseArgs += @($Image)
+    $baseArgs += $CommandArgs
 
     docker $baseArgs
 }
@@ -217,22 +222,57 @@ function Invoke-DockerRun {
 function Invoke-DockerServe {
     $runningOnLinux = $IsLinux -or (Test-Path "/dev/dri")
 
+    # Check which image is available
+    $hasRuntime = $false
+    $hasLatest = $false
+
+    try {
+        $r = docker image inspect fingpt:runtime -f "{{.Id}}" 2>$null
+        if ($r) { $hasRuntime = $true }
+    } catch { }
+    try {
+        $l = docker image inspect fingpt:latest -f "{{.Id}}" 2>$null
+        if ($l) { $hasLatest = $true }
+    } catch { }
+
+    if ($hasRuntime) {
+        $img = "fingpt:runtime"
+        Write-Info "Using fingpt:runtime"
+    } elseif ($hasLatest) {
+        $img = "fingpt:latest"
+        Write-Info "Using fingpt:latest"
+    } else {
+        Write-Fail "No Docker image found!"
+        exit 1
+    }
+
     $baseArgs = @(
         "run", "--rm",
-        "--network=host",
         "--shm-size=2gb",
         "-e", "PYTHONUNBUFFERED=1",
-        "-v", "${SCRIPT_DIR}\models:/app/models",
-        "-v", "${SCRIPT_DIR}\configs:/app/configs:ro",
-        "-v", "${SCRIPT_DIR}\scripts:/app/scripts:ro",
-        "-v", "${SCRIPT_DIR}\server.py:/app/server.py:ro",
-        "-v", "${SCRIPT_DIR}\app.py:/app/app.py:ro",
-        "fingpt:latest",
-        "python", "server.py"
+        "-p", "8000:8000"
     )
 
+    # fingpt:runtime has model baked in, fingpt:latest uses volume mount
+    if ($img -eq "fingpt:latest") {
+        $baseArgs += @(
+            "-v", "${SCRIPT_DIR}\models:/app/models",
+            "-v", "${SCRIPT_DIR}\configs:/app/configs:ro",
+            "-v", "${SCRIPT_DIR}\scripts:/app/scripts:ro",
+            "-v", "${SCRIPT_DIR}\server.py:/app/server.py:ro",
+            "-v", "${SCRIPT_DIR}\app.py:/app/app.py:ro"
+        )
+    } else {
+        Write-Info "Model already baked in runtime image"
+    }
+
     if ($runningOnLinux) {
-        $baseArgs = @("run", "--rm", "--device=/dev/dri:/dev/dri") + $baseArgs
+        # Linux: use host network and pass NPU/GPU device
+        $baseArgs = @("run", "--rm", "--network=host", "--device=/dev/dri:/dev/dri") + $baseArgs
+        $baseArgs += @($img, "python", "server.py")
+    } else {
+        # Windows: port mapping, CPU fallback (NPU inaccessible inside Docker)
+        $baseArgs += @($img, "python", "server.py", "--device", "CPU")
     }
 
     docker $baseArgs
@@ -248,7 +288,7 @@ function Step-DownloadModels {
         return
     }
     Write-Step "Step 1/3: Downloading base model + LoRA from HuggingFace"
-    Invoke-DockerRun -Command "python scripts/01_download_models.py" -Token $Token
+    Invoke-DockerRun -CommandArgs @("python", "scripts/01_download_models.py") -Token $Token
     if ($CleanUp) {
         Remove-ModelDir (Join-Path $SCRIPT_DIR "models\base") "base model download cache"
     }
@@ -264,7 +304,7 @@ function Step-MergeLora {
         return
     }
     Write-Step "Step 2/3: Merging LoRA into base model"
-    Invoke-DockerRun -Command "python scripts/02_merge_lora.py" -Token ""
+    Invoke-DockerRun -CommandArgs @("python", "scripts/02_merge_lora.py") -Token ""
     if ($CleanUp) {
         Remove-ModelDir (Join-Path $SCRIPT_DIR "models\base") "base model (already merged)"
     }
@@ -280,7 +320,7 @@ function Step-ConvertOpenVINO {
         return
     }
     Write-Step "Step 3/3: Converting to OpenVINO IR (INT4 symmetric)"
-    Invoke-DockerRun -Command "python scripts/03_convert_openvino.py" -Token ""
+    Invoke-DockerRun -CommandArgs @("python", "scripts/03_convert_openvino.py") -Token ""
     if ($CleanUp) {
         Remove-ModelDir (Join-Path $SCRIPT_DIR "models\merged") "merged model (already converted)"
     }
@@ -288,13 +328,44 @@ function Step-ConvertOpenVINO {
 
 function Step-RunInference {
     Write-Step "Running FinGPT inference"
-    # fingpt:runtime has the model baked in (faster startup).
-    # If not available, fall back to fingpt:latest with volume mount.
-    $img = if (docker image inspect fingpt:runtime -f "{{.Id}}" 2>$null) { "fingpt:runtime" } else { "fingpt:latest" }
-    if ($img -eq "fingpt:latest") {
-        Write-Info "fingpt:runtime not found, using fingpt:latest with volume mount"
+
+    # Check which image is available
+    $hasRuntime = $false
+    $hasLatest = $false
+
+    try {
+        $r = docker image inspect fingpt:runtime -f "{{.Id}}" 2>$null
+        if ($r) { $hasRuntime = $true }
+    } catch { }
+    try {
+        $l = docker image inspect fingpt:latest -f "{{.Id}}" 2>$null
+        if ($l) { $hasLatest = $true }
+    } catch { }
+
+    $runningOnLinux = $IsLinux -or (Test-Path "/dev/dri")
+
+    if ($hasRuntime) {
+        Write-Info "Using fingpt:runtime (model baked in)"
+        if ($runningOnLinux) {
+            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py") -Token "" -Image "fingpt:runtime"
+        } else {
+            Write-Info "NPU not accessible inside Docker on Windows — using CPU"
+            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py", "--device", "CPU") -Token "" -Image "fingpt:runtime"
+        }
+    } elseif ($hasLatest) {
+        Write-Info "Using fingpt:latest"
+        if ($runningOnLinux) {
+            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py") -Token "" -Image "fingpt:latest"
+        } else {
+            Write-Info "NPU not accessible inside Docker on Windows — using CPU"
+            Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py", "--device", "CPU") -Token "" -Image "fingpt:latest"
+        }
+    } else {
+        Write-Fail "No Docker image found!"
+        Write-Info "Building builder image first..."
+        docker build -t fingpt:latest . 2>&1 | Out-Null
+        Invoke-DockerRun -CommandArgs @("python", "scripts/04_run_inference.py", "--device", "CPU") -Token "" -Image "fingpt:latest"
     }
-    Invoke-DockerRun -Command "python scripts/04_run_inference.py --device CPU" -Token "" -Image $img
 }
 
 function Step-RunServer {
@@ -376,9 +447,10 @@ function Run-FullPipeline {
         return
     }
 
-    if (-not (docker image inspect fingpt:latest -f "{{.Id}}" 2>$null)) {
-        Build-DockerImage
-    }
+    try {
+        $imgExists = docker image inspect fingpt:latest -f "{{.Id}}" 2>$null
+        if (-not $imgExists) { Build-DockerImage }
+    } catch { Build-DockerImage }
 
     if (-not $s1done) { Step-DownloadModels -Token $Token }
     if (-not $s2done) { Step-MergeLora }
