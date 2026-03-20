@@ -58,38 +58,15 @@ FinAI phục vụ hai nhóm người dùng chính:
 
 ---
 
-# PHẦN 2: HƯỚNG DẪN TRIỂN KHAI CHI TIẾT (DOCKER)
+# PHẦN 2: HƯỚNG DẪN TRIỂN KHAI (DOCKER)
 
-> **Phương pháp khuyến nghị:** Sử dụng **Docker** — zero install friction, tự động nhận diện và bỏ qua các bước đã hoàn thành. Nếu muốn cài đặt native (không Docker), xem [PHẦN 2B](#phần-2b-hướng-dẫn-native-không-dùng-docker) ở cuối.
+## Chỉ cần 3 bước để chạy FinGPT!
 
-> **Ghi chú về ảnh chụp màn hình:** Bên dưới mỗi bước đều có nhãn **[ẢNH CẦN CHỤP N]** đánh dấu vị trí cần chèn hình. Mô tả bên nhãn cho biết chính xác cần chụp gì và kết quả mong đợi.
+### Bước 1: Thêm HuggingFace Token
 
-## Bước 0 — Kiểm tra phần cứng trước khi bắt đầu
-
-**Mục đích:** Xác nhận NPU Intel được nhận diện và driver hoạt động đúng (chạy trên máy host).
-
+Tạo file `.env`:
 ```powershell
-# Trên máy host (không cần activate venv)
-python scripts/check_hardware.py
-```
-
-> **[ẢNH CẦN CHỤP 1]**
-> **Mô tả:** Chụp kết quả đầu ra của lệnh trên. Màn hình mong đợi:
-> - Hiển thị Intel NPU được nhận diện (tên device: NPU)
-> - Không có dòng lỗi màu đỏ
-> - Hiển thị OpenVINO GenAI version
-
----
-
-## Bước 1 — Tạo file `.env`
-
-**Mục đích:** Lưu HuggingFace token để download Llama 3.1 (gated model).
-
-```powershell
-# Copy template
 copy .env.example .env
-
-# Mở file .env và thêm HuggingFace token
 notepad .env
 ```
 
@@ -98,223 +75,58 @@ Thêm dòng sau vào `.env`:
 HF_TOKEN=hf_your_token_here
 ```
 
-> **[ẢNH CẦN CHỤP 2]**
-> **Mô tả:** Chụp nội dung file `.env` đã chỉnh sửa, hiển thị dòng `HF_TOKEN=...` (che giấu giá trị token thực).
+> **[ẢNH CẦN CHỤP 1]** — File `.env` đã chỉnh sửa với `HF_TOKEN=...`
 
 ---
 
-## Bước 2 — Xác nhận License Llama 3.1 trên HuggingFace
-
-**Mục đích:** Llama 3.1 là gated model — phải đăng nhập và accept license mới được download.
+### Bước 2: Accept Llama 3.1 License
 
 Truy cập trình duyệt:
 ```
 https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
 ```
 
-Đăng nhập → Accept License (nếu chưa accept).
+Đăng nhập → Accept License.
 
-> **[ẢNH CẦN CHỤP 3]**
-> **Mô tả:** Chụp trang HuggingFace của Llama 3.1 8B Instruct cho thấy đã accept license thành công.
+> **[ẢNH CẦN CHỤP 2]** — Trang HuggingFace đã accept license
 
 ---
 
-## Bước 3 — Chạy Pipeline với Docker (một lệnh duy nhất)
-
-**Mục đích:** Docker tự động chạy toàn bộ pipeline (download → merge → convert). Các bước đã hoàn thành sẽ được tự động bỏ qua.
+### Bước 3: Chạy một lệnh duy nhất!
 
 ```powershell
 .\run.ps1 -FullPipeline
 ```
 
-Quá trình này mất **30–60 phút** lần đầu tiên (tùy tốc độ internet và cấu hình máy). Các lần sau sẽ nhanh hơn nhiều vì models được cache.
+Xong! Docker sẽ tự động:
+- Tải models về
+- Merge LoRA
+- Convert sang OpenVINO
 
-**Tự động xả disk sau mỗi bước** (tiết kiệm ổ cứng):
+Quá trình mất **30–60 phút** lần đầu. Các lần sau nhanh hơn nhiều.
 
-```powershell
-.\run.ps1 -FullPipeline -CleanUp
-```
-
-> **[ẢNH CẦN CHỤP 4]**
-> **Mô tả:** Chụp output cuối cùng khi pipeline hoàn tất, phải thấy:
-> - "Step 1 SKIPPED" hoặc "Step 1/3: Downloading..."
-> - "Step 2 SKIPPED" hoặc "Step 2/3: Merging..."
-> - "Step 3/3: Converting to OpenVINO IR (INT4 symmetric)"
-> - "Pipeline complete!"
-
-**Kiểm tra trạng thái pipeline:**
-
-```powershell
-.\run.ps1
-```
-
-> **[ẢNH CẦN CHỤP 5]**
-> **Mô tả:** Chụp menu interactive của run.ps1, hiển thị:
-> - Pipeline status: Step 1 [DONE], Step 2 [DONE], Step 3 [DONE]
-> - Disk usage cho mỗi thư mục models
+> **[ẢNH CẦN CHỤP 3]** — Output "Pipeline complete!"
 
 ---
 
-## Bước 4 — Chạy Inference
-
-### 4A. Chế độ CLI tương tác (test nhanh)
-
-```powershell
-.\run.ps1 -Inference
-```
-
-> **[ẢNH CẦN CHỤP 6]**
-> **Mô tả:** Chụp một cuộc hội thoại mẫu trên terminal:
-> - Câu hỏi: "What is the current market sentiment for AAPL?"
-> - Câu trả lời đầy đủ từ FinGPT
-
-### 4B. Chạy API Server (cho Gradio / OpenClaw)
+### Sau khi pipeline xong: Chạy FinGPT
 
 ```powershell
 .\run.ps1 -Server
 ```
 
-Server khởi động trên port 8000.
+Mở trình duyệt: `http://localhost:8000`
 
-> **[ẢNH CẦN CHỤP 7]**
-> **Mô tả:** Chụp output của server khi khởi động thành công:
-> - Dòng "Model loaded." hoặc tương tự
-> - Dòng "Starting server on 0.0.0.0:8000"
-
-**Kiểm tra health endpoint (mở terminal mới):**
-
-```bash
-curl http://127.0.0.1:8000/health
-```
-
-> **[ẢNH CẦN CHỤP 8]**
-> **Mô tả:** Chụp kết quả JSON trả về từ `/health`:
-> `{"status":"ok","model":"fingpt-llama3.1-8b-npu","device":"NPU"}`
+> **[ẢNH CẦN CHỤP 4]** — Server đang chạy
 
 ---
 
-## Bước 5 — Gradio Web UI
+### Xem thêm
 
-**Lưu ý:** Cần chạy server ở Bước 4B trước. Mở terminal mới và chạy:
-
-```powershell
-python app.py --api-url http://127.0.0.1:8000
-```
-
-Mở trình duyệt tại URL mà Gradio hiển thị (thường là `http://localhost:7860`).
-
-> **[ẢNH CẦN CHỤP 9]**
-> **Mô tả:** Chụp giao diện Gradio hiển thị trên trình duyệt:
-> - Tiêu đề "FinGPT — Financial AI Assistant (Intel NPU)"
-> - Hộp chat input
-> - Các câu hỏi mẫu (examples)
-
-> **[ẢNH CẦN CHỤP 10]**
-> **Mô tả:** Chụp kết quả sau khi gửi một câu hỏi mẫu trên Gradio.
-
----
-
-## Bước 6 — Chạy Test Suite
-
-**Lưu ý:** Cần server đang chạy ở Bước 4B.
-
-```powershell
-python tests/test_fingpt.py
-```
-
-> **[ẢNH CẦN CHỤP 11]**
-> **Mô tả:** Chụp kết quả cuối cùng của test suite:
-> - Số cases passed / total (ví dụ: "14 passed, 0 failed")
-> - Thời gian chạy
-
-**Test suite tiếng Việt (tuỳ chọn):**
-
-```powershell
-python tests/test_fingpt_vi.py
-```
-
----
-
-## Bước 7 — Xây dựng Docker Image Runtime (tuỳ chọn)
-
-Sau khi pipeline hoàn tất, có thể xây dựng Docker image runtime (model đã bake sẵn trong image, không cần volume mount):
-
-```powershell
-.\run.ps1 -Build
-```
-
-> **[ẢNH CẦN CHỤP 12]**
-> **Mô tả:** Chụp output xác nhận "fingpt:runtime built successfully"
-
----
-
-## Bước 8 — Xả disk sau pipeline (tuỳ chọn)
-
-Sau khi đã có `models/openvino/`, có thể xóa các model trung gian để tiết kiệm ổ cứng:
-
-```powershell
-# Chạy menu và chọn option 9
-.\run.ps1
-```
-
-> **[ẢNH CẦN CHỤP 13]**
-> **Mô tả:** Chụp menu cleanup hiển thị các tùy chọn xóa model.
-
----
-
-# PHẦN 2B: Hướng dẫn Native (không dùng Docker)
-
-> **Dành cho:** Người dùng muốn cài đặt trực tiếp trên máy host mà không dùng Docker.
-
-## Bước 0 — Kiểm tra phần cứng
-
-```bash
-python scripts/check_hardware.py
-```
-
-## Bước 1 — Setup môi trường
-
-```powershell
-powershell -ExecutionPolicy Bypass -File setup.ps1
-.\.venv\Scripts\Activate.ps1
-```
-
-Tạo file `.env`:
-```bash
-copy .env.example .env
-notepad .env
-# Thêm: HF_TOKEN=hf_your_token_here
-```
-
-## Bước 2 — Accept Llama 3.1 License
-
-Truy cập: `https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct` → Accept License
-
-## Bước 3 — Download Models
-
-```bash
-python scripts/01_download_models.py
-```
-
-## Bước 4 — Merge LoRA
-
-```bash
-python scripts/02_merge_lora.py
-```
-
-## Bước 5 — Convert OpenVINO
-
-```bash
-python scripts/03_convert_openvino.py
-```
-
-## Bước 6 — Inference
-
-```bash
-python scripts/04_run_inference.py       # CLI
-python server.py                         # API Server
-python app.py --api-url http://127.0.0.1:8000  # Gradio Web UI
-```
+- **Menu tương tác:** `.\run.ps1`
+- **Test nhanh CLI:** `.\run.ps1 -Inference`
+- **Gradio Web UI:** `python app.py --api-url http://127.0.0.1:8000`
+- **Cài đặt không dùng Docker:** Xem [PHẦN 2B](#phần-2b-cài-đặt-native-không-dùng-docker)
 
 ---
 
@@ -1147,19 +959,10 @@ Input: messages = list of Message objects
 
 | STT | Bước | File ảnh đề xuất | Mô tả nội dung |
 |-----|------|-------------------|----------------|
-| 1 | Bước 0 | `01_hardware_check.png` | Output `check_hardware.py` — NPU được nhận diện |
-| 2 | Bước 1 | `02_env_file.png` | File `.env` hiển thị `HF_TOKEN=...` (che giá trị) |
-| 3 | Bước 2 | `03_hf_license.png` | Trang HuggingFace Llama 3.1 đã accept license |
-| 4 | Bước 3 | `04_pipeline_complete.png` | Output `run.ps1 -FullPipeline` — "Pipeline complete!" |
-| 5 | Bước 3 | `05_pipeline_status.png` | Menu `run.ps1` — Step 1/2/3 [DONE] + disk usage |
-| 6 | Bước 4A | `06_inference_chat.png` | Terminal CLI — câu hỏi + câu trả lời mẫu |
-| 7 | Bước 4B | `07_server_startup.png` | Server output — "Model loaded." + "Starting server on..." |
-| 8 | Bước 4B | `08_health_response.png` | JSON response từ `/health` endpoint |
-| 9 | Bước 5 | `09_gradio_ui.png` | Gradio web UI trên trình duyệt |
-| 10 | Bước 5 | `10_gradio_result.png` | Gradio hiển thị câu trả lời từ FinGPT |
-| 11 | Bước 6 | `11_test_results.png` | Test suite output — passed/total + thời gian |
-| 12 | Bước 7 | `12_docker_build.png` | Output `run.ps1 -Build` — "fingpt:runtime built successfully" |
-| 13 | Bước 8 | `13_cleanup_menu.png` | Menu cleanup — tùy chọn xóa model |
+| 1 | Bước 1 | `01_env_file.png` | File `.env` hiển thị `HF_TOKEN=...` (che giá trị) |
+| 2 | Bước 2 | `02_hf_license.png` | Trang HuggingFace Llama 3.1 đã accept license |
+| 3 | Bước 3 | `03_pipeline_complete.png` | Output `.\run.ps1 -FullPipeline` — "Pipeline complete!" |
+| 4 | Sau Bước 3 | `04_server_running.png` | Server đang chạy tại `http://localhost:8000` |
 
 ---
 
