@@ -2,7 +2,7 @@
 
 **Phiên bản:** 1.2
 **Ngày cập nhật:** 2026-03-20
-**Phần cứng mục tiêu:** Intel Core Ultra 7 258V (Lunar Lake), 47 TOPS NPU, 32GB RAM, Intel Arc 140V GPU 16GB
+**Phần cứng mục tiêu:** Intel Core Ultra 7 258V (Lunar Lake), 47 TOPS NPU, 32GB RAM, Intel Arc GPU
 
 ---
 
@@ -10,22 +10,22 @@
 
 ## 1.1. FinAI là gì?
 
-FinAI là hệ thống triển khai mô hình ngôn ngữ lớn FinGPT (dựa trên Llama 3.1 8B Instruct + LoRA fine-tune) trên phần cứng Intel cục bộ — **Intel Arc 140V GPU 16GB** (ưu tiên) hoặc **NPU 47 TOPS** (tiết kiệm điện) — sử dụng OpenVINO với lượng tử hóa INT4 symmetric.
+FinAI là hệ thống triển khai mô hình ngôn ngữ lớn FinGPT (dựa trên Llama 3.1 8B Instruct + LoRA fine-tune) trên phần cứng Intel cục bộ — **GPU** (ưu tiên), **NPU**, hoặc **CPU** (fallback) — sử dụng OpenVINO với lượng tử hóa INT4 symmetric.
 
 Nói cách khác, FinAI cho phép chạy một mô hình AI tài chính 7 tỷ tham số **hoàn toàn trên phần cứng cục bộ** — không cần cloud, không cần trả phí API.
 
 ```
 Phần cứng chạy FinGPT (ưu tiên GPU):
 ┌─────────────────────────────────────────────────┐
-│  Intel Core Ultra 7 258V + Intel Arc 140V      │
-│  ├── GPU: Arc 140V 16GB — TỐC ĐỘ NHANH NHẤT   │  ← Ưu tiên dùng (Intel Arc 16GB)
-│  ├── NPU: 47 TOPS — Tiết kiệm điện            │  ← Low power inference
-│  └── CPU: fallback nếu GPU/NPU lỗi            │
+│  Intel Core Ultra 7 258V                        │
+│  ├── GPU — TỐC ĐỘ NHANH NHẤT                 │  ← Ưu tiên dùng
+│  ├── NPU — Tiết kiệm điện                    │  ← Low power inference
+│  └── CPU — fallback khi GPU/NPU lỗi          │
 │  RAM: 32 GB                                     │
 └─────────────────────────────────────────────────┘
 ```
 
-> **GPU (Arc 140V 16GB) cho tốc độ nhanh hơn CPU ~5-10×.** NPU (47 TOPS) tiết kiệm điện hơn nhưng chậm hơn GPU.
+> **GPU nhanh hơn CPU ~5-10×.** NPU tiết kiệm điện hơn nhưng chậm hơn GPU.
 
 ## 1.2. Dự án dành cho ai?
 
@@ -40,9 +40,9 @@ FinAI phục vụ hai nhóm người dùng chính:
 
 | Khía cạnh | Chi tiết | Tác động |
 |---|---|---|
-| **Giảm chi phí vận hành** | Không cần subscription API key (OpenAI/Anthropic). Inference chạy hoàn toàn trên Arc GPU / NPU cục bộ — chi phí điện ~25-40W so với cloud GPU ~300W/session. | Giảm chi phí vận hành hàng tháng từ hàng trăm USD (cloud API) xuống gần bằng không. |
+| **Giảm chi phí vận hành** | Không cần subscription API key (OpenAI/Anthropic). Inference chạy hoàn toàn trên GPU / NPU cục bộ — chi phí điện thấp so với cloud GPU ~300W/session. | Giảm chi phí vận hành hàng tháng từ hàng trăm USD (cloud API) xuống gần bằng không. |
 | **Bảo mật dữ liệu** | Dữ liệu tài chính nhạy cảm (báo cáo tài chính, chiến lược đầu tư, thông tin khách hàng) không rời khỏi máy local. | Tuân thủ quy định bảo mật dữ liệu doanh nghiệp (GDPR, NDPL...). Giảm rủi ro rò rỉ dữ liệu. |
-| **Thúc đẩy AI cạnh tranh** | Minh chứng rằng NPU/Arc GPU tích hợp sẵn có thể chạy LLM 7B thay vì phải dùng GPU rời (75W+). | Mở đường cho AI xanh (green AI), AI di động, AI edge computing. Giảm carbon footprint của AI. |
+| **Thúc đẩy AI cạnh tranh** | Minh chứng rằng GPU / NPU tích hợp sẵn có thể chạy LLM 7B thay vì phải dùng GPU rời (75W+). | Mở đường cho AI xanh (green AI), AI di động, AI edge computing. Giảm carbon footprint của AI. |
 | **Tiếp cận công nghệ** | Cho phép cá nhân, doanh nghiệp vừa và nhỏ (SMB), thị trường mới nổi tiến cận LLM tài chính mà không cần hạ tầng cloud đắt đỏ. | Dân chủ hóa AI — bất kỳ ai có laptop Intel Lunar Lake đều có thể chạy. |
 | **Tái sử dụng phần cứng** | Tận dụng NPU tích hợp sẵn trên laptop/PC Intel Lunar Lake — phần cứng thường bị bỏ phí vì không có ứng dụng sử dụng. | Giảm e-waste, tối ưu hóa vòng đời thiết bị. |
 
@@ -53,7 +53,7 @@ FinAI phục vụ hai nhóm người dùng chính:
 | **Base model** | Meta Llama 3.1 8B Instruct (8 tỷ tham số) |
 | **Fine-tune adapter** | FinGPT LoRA adapter (PEFT) — chuyên biệt tài chính |
 | **Inference engine** | OpenVINO GenAI (openvino-genai >= 2025.0.0) |
-| **Phần cứng** | Intel Arc 140V GPU 16GB (ưu tiên) · Intel NPU 47 TOPS (tiết kiệm điện) · CPU (fallback) · 32GB RAM |
+| **Phần cứng** | GPU (ưu tiên) · NPU (tiết kiệm điện) · CPU (fallback) · 32GB RAM |
 | **Lượng tử hóa** | INT4 symmetric, ratio=1.0, group_size=-1 (channel-wise) |
 | **Kích thước model** | ~8 GB (base) + ~8 GB (LoRA) → ~16 GB (merged FP16) → ~4.5 GB (INT4) |
 | **Nền tảng** | Windows 11, Python 3.11 |
