@@ -74,7 +74,8 @@ https://docker.com/desktop
 
 Sau khi cài xong, mở Docker Desktop và đợi cho đến khi thấy icon "Docker is running".
 
-> **[ẢNH CẦN CHỤP 0]** — Docker Desktop đang chạy
+> **Hình 0: Docker Desktop đang chạy**
+> ![Hình 0](images/00-docker-running.png)
 
 ---
 
@@ -90,7 +91,8 @@ Sau đó thêm dòng này vào file `.env`:
 HF_TOKEN=hf_YOUR_TOKEN_HERE
 ```
 
-> **[ẢNH CẦN CHỤP 1]** — File `.env` đã lưu với `HF_TOKEN=...`
+> **Hình 1: File `.env` đã lưu với `HF_TOKEN=...`**
+> ![Hình 1](images/01-env-file.png)
 
 ---
 
@@ -103,7 +105,8 @@ https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
 
 Đăng nhập → **Accept License**
 
-> **[ẢNH CẦN CHỤP 2]** — Đã accept license thành công
+> **Hình 2: Đã accept license thành công**
+> ![Hình 2](images/02-hf-license.png)
 
 ---
 
@@ -115,7 +118,8 @@ https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
 
 Xong! Docker tự động làm hết: download → merge → convert.
 
-> **[ẢNH CẦN CHỤP 3]** — Output "Pipeline complete!"
+> **Hình 3: Output "Pipeline complete!"**
+> ![Hình 3](images/03-pipeline-complete.png)
 
 ---
 
@@ -127,7 +131,8 @@ Xong! Docker tự động làm hết: download → merge → convert.
 
 Mở trình duyệt: `http://localhost:8000`
 
-> **[ẢNH CẦN CHỤP 4]** — Server đang chạy
+> **Hình 4: Server đang chạy**
+> ![Hình 4](images/04-server-running.png)
 
 ---
 
@@ -1052,12 +1057,16 @@ Input: messages = list of Message objects
 
 # PHẦN 5: BẢNG TỔNG HỢP CÁC ẢNH CẦN CHỤP
 
-| STT | Bước | File ảnh đề xuất | Mô tả nội dung |
-|-----|------|-------------------|----------------|
-| 1 | Bước 1 | `01_env_file.png` | File `.env` hiển thị `HF_TOKEN=...` (che giá trị) |
-| 2 | Bước 2 | `02_hf_license.png` | Trang HuggingFace Llama 3.1 đã accept license |
-| 3 | Bước 3 | `03_pipeline_complete.png` | Output `.\run.ps1 -FullPipeline` — "Pipeline complete!" |
-| 4 | Sau Bước 3 | `04_server_running.png` | Server đang chạy tại `http://localhost:8000` |
+| STT | File ảnh | Mô tả |
+|-----|----------|--------|
+| 0 | `images/00-docker-running.png` | Docker Desktop đang chạy |
+| 1 | `images/01-env-file.png` | File `.env` đã lưu với `HF_TOKEN=...` |
+| 2 | `images/02-hf-license.png` | Đã accept HuggingFace Llama 3.1 license |
+| 3 | `images/03-pipeline-complete.png` | Output "Pipeline complete!" |
+| 4 | `images/04-server-running.png` | Server đang chạy tại `http://localhost:8000` |
+| 5 | `images/05-openclaw-running.png` | *(tuỳ chọn)* OpenClaw gọi FinGPT thành công |
+
+> **Lưu ảnh vào thư mục `images/`** trong project FinAI, đặt đúng tên file như bảng trên.
 
 ---
 
@@ -1074,8 +1083,8 @@ File cấu hình OpenClaw nằm ở `~/.openclaw/openclaw.json`:
 }
 ```
 
-> **[ẢNH CẦN CHỤP 15]** *(tuỳ chọn)*
-> **Mô tả:** Chụp file `~/.openclaw/openclaw.json` đã cấu hình đúng, kèm output OpenClaw TUI đang gọi FinGPT thành công.
+> **Hình 5: OpenClaw đang gọi FinGPT thành công** *(tuỳ chọn)*
+> ![Hình 5](images/05-openclaw-running.png)
 
 ---
 
