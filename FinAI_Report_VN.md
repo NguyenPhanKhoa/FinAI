@@ -58,46 +58,38 @@ FinAI phục vụ hai nhóm người dùng chính:
 
 ---
 
-# PHẦN 2: HƯỚNG DẪN TRIỂN KHAI CHI TIẾT
+# PHẦN 2: HƯỚNG DẪN TRIỂN KHAI CHI TIẾT (DOCKER)
+
+> **Phương pháp khuyến nghị:** Sử dụng **Docker** — zero install friction, tự động nhận diện và bỏ qua các bước đã hoàn thành. Nếu muốn cài đặt native (không Docker), xem [PHẦN 2B](#phần-2b-hướng-dẫn-native-không-dùng-docker) ở cuối.
 
 > **Ghi chú về ảnh chụp màn hình:** Bên dưới mỗi bước đều có nhãn **[ẢNH CẦN CHỤP N]** đánh dấu vị trí cần chèn hình. Mô tả bên nhãn cho biết chính xác cần chụp gì và kết quả mong đợi.
 
 ## Bước 0 — Kiểm tra phần cứng trước khi bắt đầu
 
-**Mục đích:** Xác nhận NPU Intel được nhận diện và driver hoạt động đúng.
+**Mục đích:** Xác nhận NPU Intel được nhận diện và driver hoạt động đúng (chạy trên máy host).
 
-```bash
+```powershell
+# Trên máy host (không cần activate venv)
 python scripts/check_hardware.py
 ```
 
 > **[ẢNH CẦN CHỤP 1]**
 > **Mô tả:** Chụp kết quả đầu ra của lệnh trên. Màn hình mong đợi:
-> - Hiển thị Intel NPU được nhận diện (tên device: NPU hoặc GNA/NPU)
+> - Hiển thị Intel NPU được nhận diện (tên device: NPU)
 > - Không có dòng lỗi màu đỏ
-> - Hiển thị thông tin device inference mặc định (NPU)
+> - Hiển thị OpenVINO GenAI version
 
 ---
 
-## Bước 1 — Setup môi trường
+## Bước 1 — Tạo file `.env`
 
-**Mục đích:** Cài đặt Python 3.11, tạo virtual environment, cài tất cả dependencies.
+**Mục đích:** Lưu HuggingFace token để download Llama 3.1 (gated model).
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File setup.ps1
-```
-
-> **[ẢNH CẦN CHỤP 2]**
-> **Mô tả:** Chụp toàn bộ output cuối cùng của setup.ps1, đặc biệt:
-> - Dòng hiển thị "Setup complete!" màu xanh
-> - Danh sách 8 bước tiếp theo được liệt kê bên dưới
-
-**Sau đó, tạo file `.env`:**
-
-```bash
 # Copy template
 copy .env.example .env
 
-# Mở file .env bằng Notepad và thêm HuggingFace token
+# Mở file .env và thêm HuggingFace token
 notepad .env
 ```
 
@@ -106,14 +98,8 @@ Thêm dòng sau vào `.env`:
 HF_TOKEN=hf_your_token_here
 ```
 
-> **[ẢNH CẦN CHỤP 3]**
-> **Mô tả:** Chụp nội dung file `.env` đã chỉnh sửa, hiển thị dòng `HF_TOKEN=...` (che giấu giá trị token thực bằng cách làm mờ hoặc che phần sau dấu `=`).
-
-**Activate môi trường ảo:**
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
+> **[ẢNH CẦN CHỤP 2]**
+> **Mô tả:** Chụp nội dung file `.env` đã chỉnh sửa, hiển thị dòng `HF_TOKEN=...` (che giấu giá trị token thực).
 
 ---
 
@@ -128,156 +114,206 @@ https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
 
 Đăng nhập → Accept License (nếu chưa accept).
 
-> **[ẢNH CẦN CHỤP 4]**
-> **Mô tả:** Chụp trang HuggingFace của Llama 3.1 8B Instruct cho thấy đã accept license thành công (có thể làm mờ phần token/API key hiển thị).
+> **[ẢNH CẦN CHỤP 3]**
+> **Mô tả:** Chụp trang HuggingFace của Llama 3.1 8B Instruct cho thấy đã accept license thành công.
 
 ---
 
-## Bước 3 — Download Models từ HuggingFace
+## Bước 3 — Chạy Pipeline với Docker (một lệnh duy nhất)
 
-**Mục đích:** Tải model gốc Llama 3.1 8B Instruct và FinGPT LoRA adapter về local.
+**Mục đích:** Docker tự động chạy toàn bộ pipeline (download → merge → convert). Các bước đã hoàn thành sẽ được tự động bỏ qua.
 
-```bash
-python scripts/01_download_models.py
+```powershell
+.\run.ps1 -FullPipeline
 ```
 
-Quá trình này mất 10–30 phút tùy tốc độ internet.
+Quá trình này mất **30–60 phút** lần đầu tiên (tùy tốc độ internet và cấu hình máy). Các lần sau sẽ nhanh hơn nhiều vì models được cache.
+
+**Tự động xả disk sau mỗi bước** (tiết kiệm ổ cứng):
+
+```powershell
+.\run.ps1 -FullPipeline -CleanUp
+```
+
+> **[ẢNH CẦN CHỤP 4]**
+> **Mô tả:** Chụp output cuối cùng khi pipeline hoàn tất, phải thấy:
+> - "Step 1 SKIPPED" hoặc "Step 1/3: Downloading..."
+> - "Step 2 SKIPPED" hoặc "Step 2/3: Merging..."
+> - "Step 3/3: Converting to OpenVINO IR (INT4 symmetric)"
+> - "Pipeline complete!"
+
+**Kiểm tra trạng thái pipeline:**
+
+```powershell
+.\run.ps1
+```
 
 > **[ẢNH CẦN CHỤP 5]**
-> **Mô tả:** Chụp output cuối cùng của script, phải thấy:
-> - Dòng "All models downloaded successfully."
-> - Dòng "Next step: python scripts/02_merge_lora.py"
-
-**Xác nhận file đã tải về:**
-
-```bash
-ls models/base/llama3.1-8b/
-ls models/base/fingpt-lora/
-```
-
-> **[ẢNH CẦN CHỤP 5b]** *(tuỳ chọn, thay thế cho ảnh trên)*
-> **Mô tả:** Chụp cửa sổ File Explorer hiển thị nội dung thư mục `models/base/` với hai thư mục con `llama3.1-8b` và `fingpt-lora`.
+> **Mô tả:** Chụp menu interactive của run.ps1, hiển thị:
+> - Pipeline status: Step 1 [DONE], Step 2 [DONE], Step 3 [DONE]
+> - Disk usage cho mỗi thư mục models
 
 ---
 
-## Bước 4 — Merge LoRA Adapter vào Base Model
+## Bước 4 — Chạy Inference
 
-**Mục đích:** Gộp trọng số LoRA vào model gốc để tạo một model FP16 duy nhất (OpenVINO export không chấp nhận base + adapter tách rời).
+### 4A. Chế độ CLI tương tác (test nhanh)
 
-```bash
-python scripts/02_merge_lora.py
+```powershell
+.\run.ps1 -Inference
 ```
-
-Quá trình này mất 5–15 phút tùy dung lượng RAM.
 
 > **[ẢNH CẦN CHỤP 6]**
-> **Mô tả:** Chụp output cuối cùng hiển thị:
-> - "Merge complete."
-> - "Next step: python scripts/03_convert_openvino.py"
-
-> **Ghi chú:** Thư mục `models/merged/` sau bước này sẽ chiếm ~16 GB dung lượng ổ cứng (FP16).
-
----
-
-## Bước 5 — Convert sang OpenVINO IR (INT4)
-
-**Mục đích:** Chuyển model FP16 sang định dạng OpenVINO Intermediate Representation (IR) với lượng tử hóa INT4 symmetric — định dạng duy nhất NPU Intel hỗ trợ.
-
-```bash
-python scripts/03_convert_openvino.py
-```
-
-Quá trình này mất 10–30 phút.
-
-> **[ẢNH CẦN CHỤP 7]**
-> **Mô tả:** Chụp output cuối cùng hiển thị:
-> - "Conversion complete."
-> - Đường dẫn `models/openvino/` được lưu thành công
-
-> **[ẢNH CẦN CHỤP 8]**
-> **Mô tả:** Chụp cửa sổ File Explorer hiển thị thư mục `models/openvino/` chứa các file `.xml` và `.bin` (IR files) cùng kích thước file (mong đợi ~4.5 GB tổng cộng).
-
----
-
-## Bước 6 — Chạy Inference
-
-### 6A. Chế độ CLI tương tác (test nhanh)
-
-```bash
-python scripts/04_run_inference.py
-```
-
-Gõ câu hỏi tài chính để test.
-
-> **[ẢNH CẦN CHỤP 9]**
 > **Mô tả:** Chụp một cuộc hội thoại mẫu trên terminal:
 > - Câu hỏi: "What is the current market sentiment for AAPL?"
 > - Câu trả lời đầy đủ từ FinGPT
 
-### 6B. Chạy API Server (cho Gradio / OpenClaw)
+### 4B. Chạy API Server (cho Gradio / OpenClaw)
 
-```bash
-python server.py
+```powershell
+.\run.ps1 -Server
 ```
 
 Server khởi động trên port 8000.
 
-> **[ẢNH CẦN CHỤP 10]**
+> **[ẢNH CẦN CHỤP 7]**
 > **Mô tả:** Chụp output của server khi khởi động thành công:
 > - Dòng "Model loaded." hoặc tương tự
 > - Dòng "Starting server on 0.0.0.0:8000"
 
-**Kiểm tra health endpoint:**
+**Kiểm tra health endpoint (mở terminal mới):**
 
 ```bash
 curl http://127.0.0.1:8000/health
 ```
 
-> **[ẢNH CẦN CHỤP 11]**
-> **Mô tả:** Chụp kết quả JSON trả về từ `/health`, ví dụ:
+> **[ẢNH CẦN CHỤP 8]**
+> **Mô tả:** Chụp kết quả JSON trả về từ `/health`:
 > `{"status":"ok","model":"fingpt-llama3.1-8b-npu","device":"NPU"}`
 
 ---
 
-## Bước 7 — Gradio Web UI
+## Bước 5 — Gradio Web UI
 
-**Lưu ý:** Bước này cần server.py đang chạy ở bước 6B.
+**Lưu ý:** Cần chạy server ở Bước 4B trước. Mở terminal mới và chạy:
 
-```bash
+```powershell
 python app.py --api-url http://127.0.0.1:8000
 ```
 
-Mở trình duyệt tại URL mà Gradio hiển thị (thường là `http://localhost:XXXXX`).
+Mở trình duyệt tại URL mà Gradio hiển thị (thường là `http://localhost:7860`).
 
-> **[ẢNH CẦN CHỤP 12]**
-> **Mô tả:** Chụp giao diện Gradio hiển thị trên trình duyệt — phải thấy:
+> **[ẢNH CẦN CHỤP 9]**
+> **Mô tả:** Chụp giao diện Gradio hiển thị trên trình duyệt:
 > - Tiêu đề "FinGPT — Financial AI Assistant (Intel NPU)"
 > - Hộp chat input
 > - Các câu hỏi mẫu (examples)
 
-> **[ẢNH CẦN CHỤP 13]**
-> **Mô tả:** Chụp kết quả sau khi gửi một câu hỏi mẫu trên Gradio — phải thấy câu trả lời đầy đủ từ FinGPT hiển thị trong giao diện chat.
+> **[ẢNH CẦN CHỤP 10]**
+> **Mô tả:** Chụp kết quả sau khi gửi một câu hỏi mẫu trên Gradio.
 
 ---
 
-## Bước 8 — Chạy Test Suite
+## Bước 6 — Chạy Test Suite
 
-**Lưu ý:** Bước này cần server.py đang chạy ở bước 6B.
+**Lưu ý:** Cần server đang chạy ở Bước 4B.
 
-```bash
+```powershell
 python tests/test_fingpt.py
 ```
 
-> **[ẢNH CẦN CHỤP 14]**
-> **Mô tả:** Chụp kết quả cuối cùng của test suite, phải thấy:
+> **[ẢNH CẦN CHỤP 11]**
+> **Mô tả:** Chụp kết quả cuối cùng của test suite:
 > - Số cases passed / total (ví dụ: "14 passed, 0 failed")
-> - Điểm số keyword match ratio
 > - Thời gian chạy
 
 **Test suite tiếng Việt (tuỳ chọn):**
 
-```bash
+```powershell
 python tests/test_fingpt_vi.py
+```
+
+---
+
+## Bước 7 — Xây dựng Docker Image Runtime (tuỳ chọn)
+
+Sau khi pipeline hoàn tất, có thể xây dựng Docker image runtime (model đã bake sẵn trong image, không cần volume mount):
+
+```powershell
+.\run.ps1 -Build
+```
+
+> **[ẢNH CẦN CHỤP 12]**
+> **Mô tả:** Chụp output xác nhận "fingpt:runtime built successfully"
+
+---
+
+## Bước 8 — Xả disk sau pipeline (tuỳ chọn)
+
+Sau khi đã có `models/openvino/`, có thể xóa các model trung gian để tiết kiệm ổ cứng:
+
+```powershell
+# Chạy menu và chọn option 9
+.\run.ps1
+```
+
+> **[ẢNH CẦN CHỤP 13]**
+> **Mô tả:** Chụp menu cleanup hiển thị các tùy chọn xóa model.
+
+---
+
+# PHẦN 2B: Hướng dẫn Native (không dùng Docker)
+
+> **Dành cho:** Người dùng muốn cài đặt trực tiếp trên máy host mà không dùng Docker.
+
+## Bước 0 — Kiểm tra phần cứng
+
+```bash
+python scripts/check_hardware.py
+```
+
+## Bước 1 — Setup môi trường
+
+```powershell
+powershell -ExecutionPolicy Bypass -File setup.ps1
+.\.venv\Scripts\Activate.ps1
+```
+
+Tạo file `.env`:
+```bash
+copy .env.example .env
+notepad .env
+# Thêm: HF_TOKEN=hf_your_token_here
+```
+
+## Bước 2 — Accept Llama 3.1 License
+
+Truy cập: `https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct` → Accept License
+
+## Bước 3 — Download Models
+
+```bash
+python scripts/01_download_models.py
+```
+
+## Bước 4 — Merge LoRA
+
+```bash
+python scripts/02_merge_lora.py
+```
+
+## Bước 5 — Convert OpenVINO
+
+```bash
+python scripts/03_convert_openvino.py
+```
+
+## Bước 6 — Inference
+
+```bash
+python scripts/04_run_inference.py       # CLI
+python server.py                         # API Server
+python app.py --api-url http://127.0.0.1:8000  # Gradio Web UI
 ```
 
 ---
@@ -1112,20 +1148,18 @@ Input: messages = list of Message objects
 | STT | Bước | File ảnh đề xuất | Mô tả nội dung |
 |-----|------|-------------------|----------------|
 | 1 | Bước 0 | `01_hardware_check.png` | Output `check_hardware.py` — NPU được nhận diện |
-| 2 | Bước 1 | `02_setup_complete.png` | Output cuối `setup.ps1` — "Setup complete!" + 8 bước tiếp theo |
-| 3 | Bước 1 | `03_env_file.png` | File `.env` hiển thị `HF_TOKEN=...` (che giá trị) |
-| 4 | Bước 2 | `04_hf_license.png` | Trang HuggingFace Llama 3.1 đã accept license |
-| 5 | Bước 3 | `05_download_success.png` | Output "All models downloaded successfully." |
-| 5b | Bước 3 | `05b_models_folder.png` | *(Tuỳ chọn thay thế 5)* File Explorer `models/base/` |
-| 6 | Bước 4 | `06_merge_complete.png` | Output "Merge complete." |
-| 7 | Bước 5 | `07_convert_complete.png` | Output "Conversion complete." |
-| 8 | Bước 5 | `08_openvino_folder.png` | File Explorer `models/openvino/` — file IR + kích thước |
-| 9 | Bước 6A | `09_inference_chat.png` | Terminal CLI — câu hỏi + câu trả lời mẫu |
-| 10 | Bước 6B | `10_server_startup.png` | Server output — "Model loaded." + "Starting server on..." |
-| 11 | Bước 6B | `11_health_response.png` | JSON response từ `/health` endpoint |
-| 12 | Bước 7 | `12_gradio_ui.png` | Gradio web UI trên trình duyệt |
-| 13 | Bước 7 | `13_gradio_result.png` | Gradio hiển thị câu trả lời từ FinGPT |
-| 14 | Bước 8 | `14_test_results.png` | Test suite output — passed/total + keyword scores |
+| 2 | Bước 1 | `02_env_file.png` | File `.env` hiển thị `HF_TOKEN=...` (che giá trị) |
+| 3 | Bước 2 | `03_hf_license.png` | Trang HuggingFace Llama 3.1 đã accept license |
+| 4 | Bước 3 | `04_pipeline_complete.png` | Output `run.ps1 -FullPipeline` — "Pipeline complete!" |
+| 5 | Bước 3 | `05_pipeline_status.png` | Menu `run.ps1` — Step 1/2/3 [DONE] + disk usage |
+| 6 | Bước 4A | `06_inference_chat.png` | Terminal CLI — câu hỏi + câu trả lời mẫu |
+| 7 | Bước 4B | `07_server_startup.png` | Server output — "Model loaded." + "Starting server on..." |
+| 8 | Bước 4B | `08_health_response.png` | JSON response từ `/health` endpoint |
+| 9 | Bước 5 | `09_gradio_ui.png` | Gradio web UI trên trình duyệt |
+| 10 | Bước 5 | `10_gradio_result.png` | Gradio hiển thị câu trả lời từ FinGPT |
+| 11 | Bước 6 | `11_test_results.png` | Test suite output — passed/total + thời gian |
+| 12 | Bước 7 | `12_docker_build.png` | Output `run.ps1 -Build` — "fingpt:runtime built successfully" |
+| 13 | Bước 8 | `13_cleanup_menu.png` | Menu cleanup — tùy chọn xóa model |
 
 ---
 
